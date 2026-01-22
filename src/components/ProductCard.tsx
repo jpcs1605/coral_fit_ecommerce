@@ -20,8 +20,8 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        <div className="absolute bottom-2 left-2 right-2 transform translate-y-8 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <button className="w-full bg-white text-cyan-600 py-2 text-sm rounded-full flex items-center justify-center gap-2 hover:bg-cyan-50 transition-colors">
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <button className="bg-white text-cyan-600 px-6 py-2 text-sm rounded-full flex items-center justify-center gap-2 hover:bg-cyan-50 transition-colors shadow-lg">
             <ShoppingCart className="w-4 h-4" />
             <span>Ver Detalhes</span>
           </button>
