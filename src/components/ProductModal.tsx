@@ -123,10 +123,10 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
               {showSuccess ? (
                 <span className="flex items-center justify-center gap-2">
                   <Check className="w-5 h-5" />
-                  Adicionado ao Carrinho!
+                  Colocado no Carrinho!
                 </span>
               ) : (
-                'Adicionar ao Carrinho'
+                'Colocar no Carrinho'
               )}
             </button>
           </div>

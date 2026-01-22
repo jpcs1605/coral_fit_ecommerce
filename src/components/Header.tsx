@@ -93,14 +93,14 @@ export function Header({ cartItemCount, onCartClick, categories, onSelectCategor
 
           {/* Campo de Busca */}
           <div className="flex-1 max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <div className="flex items-center gap-3 px-4 h-10 rounded-xl border border-gray-200 bg-gray-50/50 focus-within:bg-white focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-200 transition-all duration-300">
+              <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <input
                 type="text"
-                placeholder="Buscar por nome, cor, tamanho, preço, tags..."
+                placeholder="Buscar produtos..."
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 focus:border-cyan-500 focus:ring-2 focus:ring-cyan-200 outline-none transition-all duration-300"
+                className="flex-1 bg-transparent text-gray-700 placeholder:text-gray-400 text-sm leading-none outline-none"
               />
             </div>
           </div>
