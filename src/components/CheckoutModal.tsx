@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { X, MapPin, Phone, User, Home, Package, Truck } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, MapPin, Phone, User, Home, Package, Truck, Loader2 } from 'lucide-react';
 import { CartItem, CheckoutFormData } from '../types';
+import { calculateShipping } from '../services/googleSheets';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -13,51 +14,189 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
   const [formData, setFormData] = useState<CheckoutFormData>({
     name: '',
     phone: '',
-    address: '',
+    street: '',
+    number: '',
+    complement: '',
+    neighborhood: '',
     city: '',
     state: '',
     zipCode: '',
     deliveryType: 'delivery'
   });
 
+  const [shippingInfo, setShippingInfo] = useState<{
+    distance: number;
+    price: number;
+    formattedPrice: string;
+    isEstimated?: boolean;
+  } | null>(null);
+  const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
+  const [shippingError, setShippingError] = useState<string | null>(null);
+  const [isLoadingCep, setIsLoadingCep] = useState(false);
+  const [cepError, setCepError] = useState<string | null>(null);
+
+  // Buscar dados do CEP automaticamente
+  useEffect(() => {
+    const fetchCepData = async () => {
+      // Limpar erros anteriores
+      setCepError(null);
+
+      // Só buscar se for entrega e tiver CEP com 8 dígitos
+      if (formData.deliveryType !== 'delivery' || !formData.zipCode) {
+        return;
+      }
+
+      const cleanCep = formData.zipCode.replace(/[^0-9]/g, '');
+      
+      if (cleanCep.length !== 8) {
+        return;
+      }
+
+      setIsLoadingCep(true);
+
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
+        
+        if (!response.ok) {
+          throw new Error('Erro ao buscar CEP');
+        }
+
+        const data = await response.json();
+
+        if (data.erro) {
+          setCepError('CEP não encontrado');
+          setIsLoadingCep(false);
+          return;
+        }
+
+        // Preencher automaticamente os campos
+        setFormData(prev => ({
+          ...prev,
+          street: data.logradouro || '',
+          neighborhood: data.bairro || '',
+          city: data.localidade || '',
+          state: data.uf || '',
+        }));
+
+        setCepError(null);
+      } catch (error) {
+        console.error('Erro ao buscar CEP:', error);
+        setCepError('Erro ao buscar CEP');
+      } finally {
+        setIsLoadingCep(false);
+      }
+    };
+
+    // Debounce para evitar muitas chamadas à API
+    const timeoutId = setTimeout(fetchCepData, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.zipCode, formData.deliveryType]);
+
+  // Calcular frete automaticamente quando o CEP for alterado
+  useEffect(() => {
+    const calculateFreight = async () => {
+      // Limpar erros anteriores
+      setShippingError(null);
+
+      // Só calcular se for entrega e tiver CEP com 8 dígitos (com ou sem hífen)
+      if (formData.deliveryType !== 'delivery' || !formData.zipCode) {
+        setShippingInfo(null);
+        return;
+      }
+
+      const cleanCep = formData.zipCode.replace(/[^0-9]/g, '');
+      
+      if (cleanCep.length !== 8) {
+        setShippingInfo(null);
+        return;
+      }
+
+      setIsCalculatingShipping(true);
+
+      try {
+        const result = await calculateShipping(formData.zipCode);
+        
+        // Agora sempre recebemos um resultado
+        setShippingInfo(result);
+        setShippingError(null);
+      } catch (error) {
+        console.error('Erro ao calcular frete:', error);
+        // Usar valor padrão em caso de erro
+        setShippingInfo({
+          distance: 15,
+          price: 12,
+          formattedPrice: 'R$ 12,00',
+          isEstimated: true,
+        });
+        setShippingError(null);
+      } finally {
+        setIsCalculatingShipping(false);
+      }
+    };
+
+    // Debounce para evitar muitas chamadas à API
+    const timeoutId = setTimeout(calculateFreight, 800);
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.zipCode, formData.deliveryType]);
+
   if (!isOpen) return null;
 
-  const total = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const shippingCost = formData.deliveryType === 'delivery' && shippingInfo ? shippingInfo.price : 0;
+  const total = subtotal + shippingCost;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    let message = `🛍️ *NOVO PEDIDO - CORAL FIT*\n\n`;
-    message += `👤 *Cliente:* ${formData.name}\n`;
-    message += `📱 *Telefone:* ${formData.phone}\n\n`;
+    let message = `*NOVO PEDIDO - CORAL FIT*\n\n`;
+    message += `*Cliente:* ${formData.name}\n`;
+    message += `*Telefone:* ${formData.phone}\n\n`;
     
-    message += `📦 *ITENS DO PEDIDO:*\n`;
+    message += `*ITENS DO PEDIDO:*\n`;
     items.forEach((item, index) => {
       message += `\n${index + 1}. *${item.product.name}*\n`;
-      message += `   • Cor: ${item.color}\n`;
-      message += `   • Tamanho: ${item.size}\n`;
-      message += `   • Quantidade: ${item.quantity}x\n`;
-      message += `   • Valor: R$ ${(item.product.price * item.quantity).toFixed(2).replace('.', ',')}\n`;
+      message += `   - Cor: ${item.color}\n`;
+      message += `   - Tamanho: ${item.size}\n`;
+      message += `   - Quantidade: ${item.quantity}x\n`;
+      message += `   - Valor: R$ ${(item.product.price * item.quantity).toFixed(2).replace('.', ',')}\n`;
     });
     
-    message += `\n━━━━━━━━━━━━━━━━━━━━━━\n`;
-    message += `💰 *TOTAL: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
-    message += `━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+    message += `\n--------------------------------\n`;
+    message += `*Subtotal Produtos: R$ ${subtotal.toFixed(2).replace('.', ',')}*\n`;
     
-    message += `🚚 *ENTREGA:*\n`;
+    if (formData.deliveryType === 'delivery' && shippingInfo) {
+      message += `*Frete (${shippingInfo.distance.toFixed(1)} km): R$ ${shippingInfo.price.toFixed(2).replace('.', ',')}*\n`;
+    }
+    
+    message += `*TOTAL: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
+    message += `--------------------------------\n\n`;
+    
+    message += `*ENTREGA:*\n`;
     if (formData.deliveryType === 'delivery') {
-      message += `📍 *Entrega no endereço*\n`;
-      message += `${formData.address}\n`;
+      message += `*Entrega no endereco*\n`;
+      message += `${formData.street}, ${formData.number}`;
+      if (formData.complement) {
+        message += ` - ${formData.complement}`;
+      }
+      message += `\n`;
+      if (formData.neighborhood) {
+        message += `${formData.neighborhood}\n`;
+      }
       message += `${formData.city} - ${formData.state}\n`;
-      message += `CEP: ${formData.zipCode}\n\n`;
-      message += `⚠️ *Frete por conta do comprador*\n`;
+      message += `CEP: ${formData.zipCode}\n`;
+      if (shippingInfo) {
+        message += `Distância: ${shippingInfo.distance.toFixed(1)} km\n`;
+        message += `Valor do frete: ${shippingInfo.formattedPrice}\n`;
+      }
     } else {
-      message += `🏪 *Retirada na loja*\n`;
+      message += `*Retirada na loja*\n`;
     }
     
     message += `\n\n_Pedido gerado automaticamente pelo site Coral Fit_`;
 
-    const whatsappNumber = '5511999999999'; // Substitua pelo número do WhatsApp
+    const whatsappNumber = '5511934994589'; // Substitua pelo número do WhatsApp
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     
@@ -156,16 +295,92 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
               <div className="space-y-4">
                 <div>
                   <label className="block text-gray-700 mb-2">
+                    <MapPin className="w-4 h-4 inline mr-2" />
+                    CEP
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={formData.zipCode}
+                      onChange={(e) => updateField('zipCode', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                      placeholder="00000-000"
+                      maxLength={9}
+                    />
+                    {(isCalculatingShipping || isLoadingCep) && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
+                      </div>
+                    )}
+                  </div>
+                  {shippingError && (
+                    <p className="text-red-500 text-sm mt-2">{shippingError}</p>
+                  )}
+                  {shippingInfo && !isCalculatingShipping && (
+                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-700">
+                        <Truck className="w-4 h-4 inline mr-1" />
+                        Frete calculado: <span className="font-semibold">{shippingInfo.formattedPrice}</span>
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        Distância: {shippingInfo.distance.toFixed(1)} km
+                        {shippingInfo.isEstimated && ' (estimativa)'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 mb-2">
                     <Home className="w-4 h-4 inline mr-2" />
-                    Endereço
+                    Rua/Avenida
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.address}
-                    onChange={(e) => updateField('address', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                    placeholder="Rua, número, complemento"
+                    value={formData.street}
+                    onChange={(e) => updateField('street', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all bg-gray-50"
+                    placeholder="Preenchido automaticamente"
+                    readOnly
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-gray-700 mb-2">Número</label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.number}
+                      onChange={(e) => updateField('number', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                      placeholder="Nº"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-gray-700 mb-2">Complemento</label>
+                    <input
+                      type="text"
+                      value={formData.complement}
+                      onChange={(e) => updateField('complement', e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                      placeholder="Apto, bloco, etc."
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 mb-2">Bairro</label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.neighborhood}
+                    onChange={(e) => updateField('neighborhood', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all bg-gray-50"
+                    placeholder="Preenchido automaticamente"
+                    readOnly
                   />
                 </div>
 
@@ -177,8 +392,9 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                       required
                       value={formData.city}
                       onChange={(e) => updateField('city', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Cidade"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all bg-gray-50"
+                      placeholder="Preenchido automaticamente"
+                      readOnly
                     />
                   </div>
 
@@ -189,59 +405,106 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                       required
                       value={formData.state}
                       onChange={(e) => updateField('state', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all bg-gray-50"
                       placeholder="UF"
                       maxLength={2}
+                      readOnly
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 mb-2">
-                    <MapPin className="w-4 h-4 inline mr-2" />
-                    CEP
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.zipCode}
-                    onChange={(e) => updateField('zipCode', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                    placeholder="00000-000"
-                  />
-                </div>
-              </div>
+                </div>              </div>
             )}
           </div>
 
           <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4 mb-6">
-            <h4 className="text-gray-800 mb-3">Resumo do Pedido</h4>
-            {items.map((item, index) => (
-              <div key={index} className="flex justify-between text-sm mb-2">
-                <span className="text-gray-600">
-                  {item.quantity}x {item.product.name} ({item.color}, {item.size})
+            <h4 className="text-gray-800 mb-3 font-semibold">Resumo do Pedido</h4>
+            
+            {/* Lista de produtos */}
+            <div className="space-y-2 mb-3">
+              {items.map((item, index) => (
+                <div key={index} className="flex justify-between text-sm">
+                  <span className="text-gray-600">
+                    {item.quantity}x {item.product.name} ({item.color}, {item.size})
+                  </span>
+                  <span className="text-gray-800">
+                    R$ {(item.product.price * item.quantity).toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {/* Separador */}
+            <div className="border-t border-cyan-200 my-3"></div>
+
+            {/* Subtotal */}
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-gray-700">Subtotal dos produtos</span>
+              <span className="text-gray-800 font-medium">
+                R$ {subtotal.toFixed(2).replace('.', ',')}
+              </span>
+            </div>
+
+            {/* Frete */}
+            {formData.deliveryType === 'delivery' && (
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-700 flex items-center gap-1">
+                  <Truck className="w-4 h-4" />
+                  Frete
+                  {shippingInfo && (
+                    <span className="text-xs text-gray-500">({shippingInfo.distance.toFixed(1)} km)</span>
+                  )}
                 </span>
-                <span className="text-gray-800">
-                  R$ {(item.product.price * item.quantity).toFixed(2).replace('.', ',')}
+                <span className="text-gray-800 font-medium">
+                  {isCalculatingShipping ? (
+                    <Loader2 className="w-4 h-4 animate-spin inline" />
+                  ) : shippingInfo ? (
+                    `R$ ${shippingInfo.price.toFixed(2).replace('.', ',')}`
+                  ) : (
+                    <span className="text-xs text-gray-500">Informe o CEP</span>
+                  )}
                 </span>
               </div>
-            ))}
-            <div className="border-t border-cyan-200 mt-3 pt-3 flex justify-between">
-              <span className="text-gray-800">Total</span>
-              <span className="text-cyan-600">
-                R$ {total.toFixed(2).replace('.', ',')}
-              </span>
+            )}
+
+            {/* Total */}
+            <div className="border-t border-cyan-300 mt-3 pt-3">
+              <div className="flex justify-between mb-3">
+                <span className="text-gray-800 font-semibold text-lg">Total</span>
+                <span className="text-cyan-600 font-bold text-xl">
+                  R$ {total.toFixed(2).replace('.', ',')}
+                </span>
+              </div>
+
+              {/* Valor recebido pelo vendedor */}
+              {/* <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-3 border border-green-200">
+                <div className="flex justify-between items-center">
+                  <span className="text-green-800 text-sm font-medium">
+                    Valor a receber (vendedor)Valor
+                  </span>
+                  <span className="text-green-700 font-bold text-lg">
+                    R$ {total.toFixed(2).replace('.', ',')}
+                  </span>
+                </div>
+                {formData.deliveryType === 'delivery' && shippingInfo && (
+                  <p className="text-xs text-green-700 mt-1">
+                    Inclui produtos (R$ {subtotal.toFixed(2).replace('.', ',')}) + frete (R$ {shippingInfo.price.toFixed(2).replace('.', ',')})
+                  </p>
+                )}
+              </div> */}
             </div>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
+            disabled={formData.deliveryType === 'delivery' && !shippingInfo && !isCalculatingShipping}
+            className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white py-4 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:from-green-500 disabled:hover:to-green-600"
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
             </svg>
-            Enviar Pedido via WhatsApp
+            {formData.deliveryType === 'delivery' && !shippingInfo && !isCalculatingShipping
+              ? 'Informe o CEP para continuar'
+              : 'Enviar Pedido via WhatsApp'
+            }
           </button>
         </form>
       </div>

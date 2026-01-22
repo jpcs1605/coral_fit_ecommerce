@@ -20,6 +20,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   useEffect(() => {
@@ -91,6 +92,8 @@ export default function App() {
         onCartClick={() => setCartOpen(true)}
         categories={categories}
         onSelectCategory={setSelectedCategory}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
       />
 
       <main className="container mx-auto px-4 py-8">
@@ -108,6 +111,7 @@ export default function App() {
           error={error}
           onRefresh={loadProducts}
           onAddToCart={addToCart}
+          searchTerm={searchTerm}
         />
       </main>
 

@@ -14,6 +14,7 @@ interface ProductGridProps {
   error: string | null;
   onRefresh: () => void;
   onAddToCart: (product: Product, color: string, size: string) => void;
+  searchTerm: string;
 }
 
 export function ProductGrid({
@@ -24,7 +25,8 @@ export function ProductGrid({
   loading,
   error,
   onRefresh,
-  onAddToCart
+  onAddToCart,
+  searchTerm
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
@@ -67,6 +69,45 @@ export function ProductGrid({
     ? products
     : products.filter(p => p.category === selectedCategory);
 
+  // Apply search filter
+  const searchFilteredProducts = searchTerm.trim()
+    ? filteredProducts.filter(product => {
+        const searchLower = searchTerm.toLowerCase().trim();
+        
+        // Buscar no nome do produto
+        if (product.name.toLowerCase().includes(searchLower)) {
+          return true;
+        }
+        
+        // Buscar no preço (permitir busca por "50" ou "50.00" etc)
+        if (product.price.toString().includes(searchLower)) {
+          return true;
+        }
+        
+        // Buscar nas cores
+        if (product.colors.some(color => color.name.toLowerCase().includes(searchLower))) {
+          return true;
+        }
+        
+        // Buscar nos tamanhos
+        if (product.sizes.some(size => size.toLowerCase().includes(searchLower))) {
+          return true;
+        }
+        
+        // Buscar nas tags
+        if (product.tags && product.tags.some(tag => tag.toLowerCase().includes(searchLower))) {
+          return true;
+        }
+        
+        // Buscar na descrição
+        if (product.description.toLowerCase().includes(searchLower)) {
+          return true;
+        }
+        
+        return false;
+      })
+    : filteredProducts;
+
   return (
     <>
       <div className="mb-8 flex flex-wrap justify-center items-center gap-4">
@@ -103,15 +144,22 @@ export function ProductGrid({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
-        {filteredProducts.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onClick={() => setSelectedProduct(product)}
-          />
-        ))}
-      </div>
+      {searchFilteredProducts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20">
+          <p className="text-gray-600 text-lg mb-2">Nenhum produto encontrado</p>
+          <p className="text-gray-500 text-sm">Tente ajustar sua busca ou filtros</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          {searchFilteredProducts.map((product) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              onClick={() => setSelectedProduct(product)}
+            />
+          ))}
+        </div>
+      )}
 
       {selectedProduct && (
         <ProductModal
