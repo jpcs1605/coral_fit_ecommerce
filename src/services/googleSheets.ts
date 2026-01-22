@@ -7,12 +7,19 @@ const SHEET_NAME = "DATABASE_SITE";
 // CEP de origem para cálculo de frete
 const ORIGIN_CEP = "06727-187";
 
-// Configurações de frete
-const SHIPPING_CONFIG = {
-  basePrice: 6.0, // Valor inicial até 3km
-  baseDistance: 3, // Distância base em km
-  pricePerKm: 0.7, // Preço por km adicional após a distância base
-};
+// Tabela de preços de frete por distância
+// Até 3km: R$ 5,00
+// Até 5km: R$ 7,00
+// Até 8km: R$ 10,00
+// Até 15km: R$ 13,00
+// Acima de 15km: R$ 25,00
+const SHIPPING_PRICE_TABLE = [
+  { maxDistance: 3, price: 5.0 },
+  { maxDistance: 5, price: 7.0 },
+  { maxDistance: 8, price: 10.0 },
+  { maxDistance: 15, price: 13.0 },
+  { maxDistance: Infinity, price: 25.0 },
+];
 
 // Interface para os dados brutos da planilha
 interface SheetRow {
@@ -485,20 +492,24 @@ function toRad(degrees: number): number {
 /**
  * Calcula o valor do frete baseado na distância em km
  * Regras:
- * - Até 3km: R$ 6,00 (valor fixo)
- * - Acima de 3km: R$ 6,00 + R$ 0,50 por km adicional
+ * - Até 3km: R$ 5,00
+ * - Até 5km: R$ 7,00
+ * - Até 8km: R$ 10,00
+ * - Até 15km: R$ 13,00
+ * - Acima de 15km: R$ 25,00
  * @param distanceKm Distância em km
  * @returns Valor do frete em reais
  */
 export function calculateShippingPrice(distanceKm: number): number {
-  if (distanceKm <= SHIPPING_CONFIG.baseDistance) {
-    return SHIPPING_CONFIG.basePrice;
+  // Encontra a faixa de preço correspondente à distância
+  for (const tier of SHIPPING_PRICE_TABLE) {
+    if (distanceKm <= tier.maxDistance) {
+      return tier.price;
+    }
   }
-
-  const additionalKm = distanceKm - SHIPPING_CONFIG.baseDistance;
-  const additionalPrice = additionalKm * SHIPPING_CONFIG.pricePerKm;
   
-  return SHIPPING_CONFIG.basePrice + additionalPrice;
+  // Fallback (não deve acontecer devido ao Infinity na última faixa)
+  return 25.0;
 }
 
 /**
