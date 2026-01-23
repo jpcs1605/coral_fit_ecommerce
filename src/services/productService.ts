@@ -50,34 +50,46 @@ export function loadProducts(): Product[] {
   }
 }
 
-// Carregar produtos (async) - tenta localStorage primeiro, depois JSON
+// Carregar produtos (async) - busca do GitHub primeiro, localStorage como fallback
 export async function loadProductsAsync(): Promise<Product[]> {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    
-    // Se já tem produtos no localStorage, retorna eles
-    if (stored) {
-      const products = JSON.parse(stored);
-      if (products.length > 0) {
-        console.log('[ProductService] Produtos carregados do localStorage:', products.length);
-        return products;
-      }
-    }
-    
-    // Se não tem produtos no localStorage, tenta carregar do JSON
-    console.log('[ProductService] localStorage vazio, carregando do JSON...');
+    // SEMPRE tenta buscar do GitHub primeiro
+    console.log('[ProductService] Buscando produtos do GitHub...');
     const productsFromJSON = await loadProductsFromJSON();
     
     if (productsFromJSON.length > 0) {
-      // Salva no localStorage para futuras consultas
+      // Salva no localStorage para futuras consultas offline
       saveProducts(productsFromJSON);
-      console.log('[ProductService] Produtos do JSON salvos no localStorage');
+      console.log('[ProductService] ✓ Produtos do GitHub salvos no localStorage');
       return productsFromJSON;
+    }
+    
+    // Se falhou ao buscar do GitHub, tenta localStorage como fallback
+    console.log('[ProductService] Falha ao buscar do GitHub, usando localStorage...');
+    const stored = localStorage.getItem(STORAGE_KEY);
+    
+    if (stored) {
+      const products = JSON.parse(stored);
+      if (products.length > 0) {
+        console.log('[ProductService] Produtos carregados do localStorage (fallback):', products.length);
+        return products;
+      }
     }
     
     return [];
   } catch (error) {
     console.error('Erro ao carregar produtos:', error);
+    // Em caso de erro, tenta localStorage
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const products = JSON.parse(stored);
+        console.log('[ProductService] Usando localStorage devido a erro:', products.length);
+        return products;
+      }
+    } catch (e) {
+      console.error('Erro ao carregar do localStorage:', e);
+    }
     return [];
   }
 }
