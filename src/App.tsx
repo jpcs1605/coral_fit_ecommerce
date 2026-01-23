@@ -6,7 +6,7 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { SheetDebugger } from './components/SheetDebugger';
 import { SetupGuide } from './components/SetupGuide';
 import { Product, CartItem } from './types';
-import { initializeProducts, getCategories } from './services/productService';
+import { loadProducts as loadProductsFromService, getCategories } from './services/productService';
 import { Toast } from './components/Toast';
 
 export default function App() {
@@ -47,23 +47,18 @@ export default function App() {
     };
   }, []);
 
-  const loadProducts = async () => {
+  const loadProducts = () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Inicializar: carrega do JSON se localStorage estiver vazio
-      const data = await initializeProducts();
+      const data = loadProductsFromService();
 
       if (data.length === 0) {
         setError('Nenhum produto encontrado. Acesse o painel admin para cadastrar produtos.');
       } else {
         setProducts(data);
         setCategories(getCategories());
-        // Remover toast automático no carregamento inicial
-        if (products.length > 0) {
-          setToast({ message: `${data.length} produtos carregados!`, type: 'success' });
-        }
       }
     } catch (err) {
       setError('Erro ao carregar produtos.');

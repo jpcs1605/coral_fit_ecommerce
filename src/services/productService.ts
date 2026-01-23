@@ -1,80 +1,34 @@
 import { Product, Color, StockItem } from '../types';
 
 const STORAGE_KEY = 'coral_fit_products';
-const PRODUCTS_JSON_URL = '/coral_fit_ecommerce/products.json';
 
 // Função auxiliar para gerar ID único
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
 }
 
-// Carregar produtos do arquivo JSON (fonte de verdade)
-export async function loadProductsFromJSON(): Promise<Product[]> {
-  try {
-    console.log('[ProductService] Carregando do products.json...');
-    const response = await fetch(PRODUCTS_JSON_URL);
-    if (!response.ok) {
-      console.warn('[ProductService] products.json não encontrado, usando localStorage');
-      return [];
-    }
-    const products = await response.json();
-    console.log('[ProductService] ✓ Carregado do JSON:', products.length, 'produtos');
-    
-    // Sincronizar com localStorage
-    if (products.length > 0) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    }
-    
-    return products;
-  } catch (error) {
-    console.error('[ProductService] Erro ao carregar do JSON:', error);
-    return [];
-  }
-}
-
-// Carregar produtos (localStorage como cache)
+// Carregar produtos do localStorage
 export function loadProducts(): Product[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    console.log('[ProductService] Carregando produtos:', stored ? 'Dados encontrados' : 'Nenhum dado');
     if (!stored) return [];
-    const products = JSON.parse(stored);
-    console.log('[ProductService] Produtos carregados:', products.length);
-    return products;
+    return JSON.parse(stored);
   } catch (error) {
-    console.error('[ProductService] Erro ao carregar produtos:', error);
+    console.error('Erro ao carregar produtos:', error);
     return [];
   }
-}
-
-// Inicializar produtos (carrega do JSON se localStorage estiver vazio)
-export async function initializeProducts(): Promise<Product[]> {
-  const localProducts = loadProducts();
-  
-  if (localProducts.length === 0) {
-    console.log('[ProductService] localStorage vazio, carregando do JSON...');
-    const jsonProducts = await loadProductsFromJSON();
-    return jsonProducts;
-  }
-  
-  return localProducts;
 }
 
 // Salvar produtos no localStorage
 export function saveProducts(products: Product[]): void {
   try {
-    const jsonData = JSON.stringify(products);
-    console.log('[ProductService] Salvando produtos:', products.length, 'produtos');
-    console.log('[ProductService] Tamanho dos dados:', (jsonData.length / 1024).toFixed(2), 'KB');
-    localStorage.setItem(STORAGE_KEY, jsonData);
-    console.log('[ProductService] ✓ Produtos salvos com sucesso!');
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
     
     // Disparar evento customizado para notificar outras partes da aplicação
     window.dispatchEvent(new CustomEvent('productsUpdated'));
-    console.log('[ProductService] Evento productsUpdated disparado');
   } catch (error) {
-    console.error('[ProductService] ✗ Erro ao salvar produtos:', error);
-    throw new Error('Erro ao salvar produtos: ' + (error as Error).message);
+    console.error('Erro ao salvar produtos:', error);
+    throw new Error('Erro ao salvar produtos');
   }
 }
 
@@ -219,7 +173,7 @@ export function exportToJSON(): string {
   return JSON.stringify(products, null, 2);
 }
 
-// Baixar arquivo JSON atualizado (para substituir no projeto)
+// Baixar arquivo products.json (para copiar para public/)
 export function downloadProductsJSON(): void {
   const products = loadProducts();
   const json = JSON.stringify(products, null, 2);
@@ -232,19 +186,6 @@ export function downloadProductsJSON(): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  console.log('[ProductService] ✓ products.json baixado!');
-}
-
-// Sincronizar: carregar do JSON remoto
-export async function syncFromRemote(): Promise<number> {
-  try {
-    const products = await loadProductsFromJSON();
-    console.log('[ProductService] Sincronizado do remoto:', products.length, 'produtos');
-    return products.length;
-  } catch (error) {
-    console.error('[ProductService] Erro ao sincronizar:', error);
-    throw error;
-  }
 }
 
 // Importar produtos de JSON

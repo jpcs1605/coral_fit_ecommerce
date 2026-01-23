@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Alert, AlertDescription } from './ui/alert';
-import { LogOut, Package, DollarSign, RefreshCw, Plus, Edit, Trash2, Download, Upload, Eye, Box, Cloud, HardDrive } from 'lucide-react';
+import { LogOut, Package, DollarSign, RefreshCw, Plus, Edit, Trash2, Download, Upload, Eye, Box, Save } from 'lucide-react';
 import { Product } from '../types';
 import { 
   loadProducts as loadProductsFromService, 
@@ -17,8 +17,7 @@ import {
   exportToJSON,
   importFromJSON,
   initializeStock,
-  downloadProductsJSON,
-  syncFromRemote
+  downloadProductsJSON
 } from '../services/productService';
 import { ProductForm } from './ProductForm';
 import { StockManager } from './StockManager';
@@ -154,17 +153,7 @@ export function AdminPanel({}: AdminPanelProps) {
 
   const handleDownloadProductsJSON = () => {
     downloadProductsJSON();
-    showToast('✓ products.json baixado! Substitua o arquivo no projeto e faça commit.', 'success');
-  };
-
-  const handleSyncFromRemote = async () => {
-    try {
-      const count = await syncFromRemote();
-      loadProducts();
-      showToast(`✓ Sincronizado! ${count} produtos carregados do repositório.`);
-    } catch (err) {
-      showToast('Erro ao sincronizar do repositório', 'error');
-    }
+    showToast('✓ products.json baixado! Copie para public/products.json no projeto.', 'success');
   };
 
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -317,22 +306,13 @@ export function AdminPanel({}: AdminPanelProps) {
           </div>
           <div className="flex items-center gap-2">
             <Button 
-              variant="outline" 
-              onClick={handleSyncFromRemote} 
-              className="gap-2"
-              title="Carregar produtos do repositório GitHub"
-            >
-              <Cloud className="h-4 w-4" />
-              Sincronizar do GitHub
-            </Button>
-            <Button 
               variant="default" 
               onClick={handleDownloadProductsJSON} 
               className="gap-2 bg-green-600 hover:bg-green-700"
-              title="Baixar products.json para substituir no projeto"
+              title="Baixar products.json para copiar para public/"
             >
-              <HardDrive className="h-4 w-4" />
-              Salvar no Projeto
+              <Save className="h-4 w-4" />
+              Gerar products.json
             </Button>
             <Button variant="outline" onClick={handleExportJSON} className="gap-2">
               <Download className="h-4 w-4" />
@@ -393,11 +373,11 @@ export function AdminPanel({}: AdminPanelProps) {
           <AlertDescription className="text-sm">
             <strong>💡 Fluxo de Trabalho:</strong> 
             <span className="ml-2">
-              1. Cadastre produtos aqui (salvos localmente) 
-              → 2. Clique em <strong>"Salvar no Projeto"</strong> 
-              → 3. Substitua <code className="bg-blue-100 px-1 rounded">public/products.json</code> 
-              → 4. Commit e Push para GitHub 
-              → 5. Site atualiza automaticamente! 🚀
+              1. Cadastre produtos aqui (salvos no navegador) 
+              → 2. Clique em <strong>"Gerar products.json"</strong> 
+              → 3. Copie o arquivo baixado para <code className="bg-blue-100 px-1 rounded">public/products.json</code> 
+              → 4. Execute <code className="bg-blue-100 px-1 rounded">npm run deploy</code> 
+              → 5. Site atualiza com os produtos! 🚀
             </span>
           </AlertDescription>
         </Alert>
