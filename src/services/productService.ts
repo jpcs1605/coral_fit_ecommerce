@@ -1,10 +1,41 @@
 import { Product, Color, StockItem } from '../types';
 
 const STORAGE_KEY = 'coral_fit_products';
+// URL do arquivo JSON no GitHub (raw)
+const PRODUCTS_JSON_URL = 'https://raw.githubusercontent.com/jpcs1605/coral_fit_ecommerce/main/public/products.json';
+// Fallback para arquivo local
+const PRODUCTS_JSON_URL_LOCAL = '/products.json';
 
 // Função auxiliar para gerar ID único
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// Função para carregar produtos do arquivo JSON
+async function loadProductsFromJSON(): Promise<Product[]> {
+  try {
+    // Tenta primeiro do GitHub
+    console.log('[ProductService] Buscando produtos do GitHub...');
+    let response = await fetch(PRODUCTS_JSON_URL);
+    
+    // Se falhar, tenta do arquivo local
+    if (!response.ok) {
+      console.warn('Falha ao buscar do GitHub, tentando arquivo local...');
+      response = await fetch(PRODUCTS_JSON_URL_LOCAL);
+    }
+    
+    if (!response.ok) {
+      console.warn('Arquivo products.json não encontrado');
+      return [];
+    }
+    
+    const products = await response.json();
+    console.log('[ProductService] ✓ Produtos carregados do JSON:', products.length);
+    return products;
+  } catch (error) {
+    console.error('Erro ao carregar products.json:', error);
+    return [];
+  }
 }
 
 // Carregar produtos do localStorage
@@ -13,6 +44,38 @@ export function loadProducts(): Product[] {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return [];
     return JSON.parse(stored);
+  } catch (error) {
+    console.error('Erro ao carregar produtos:', error);
+    return [];
+  }
+}
+
+// Carregar produtos (async) - tenta localStorage primeiro, depois JSON
+export async function loadProductsAsync(): Promise<Product[]> {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    
+    // Se já tem produtos no localStorage, retorna eles
+    if (stored) {
+      const products = JSON.parse(stored);
+      if (products.length > 0) {
+        console.log('[ProductService] Produtos carregados do localStorage:', products.length);
+        return products;
+      }
+    }
+    
+    // Se não tem produtos no localStorage, tenta carregar do JSON
+    console.log('[ProductService] localStorage vazio, carregando do JSON...');
+    const productsFromJSON = await loadProductsFromJSON();
+    
+    if (productsFromJSON.length > 0) {
+      // Salva no localStorage para futuras consultas
+      saveProducts(productsFromJSON);
+      console.log('[ProductService] Produtos do JSON salvos no localStorage');
+      return productsFromJSON;
+    }
+    
+    return [];
   } catch (error) {
     console.error('Erro ao carregar produtos:', error);
     return [];

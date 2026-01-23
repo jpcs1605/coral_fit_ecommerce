@@ -6,7 +6,7 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { SheetDebugger } from './components/SheetDebugger';
 import { SetupGuide } from './components/SetupGuide';
 import { Product, CartItem } from './types';
-import { loadProducts as loadProductsFromService, getCategories } from './services/productService';
+import { loadProducts as loadProductsFromService, loadProductsAsync, getCategories } from './services/productService';
 import { Toast } from './components/Toast';
 
 export default function App() {
@@ -47,12 +47,12 @@ export default function App() {
     };
   }, []);
 
-  const loadProducts = () => {
+  const loadProducts = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      const data = loadProductsFromService();
+      const data = await loadProductsAsync();
 
       if (data.length === 0) {
         setError('Nenhum produto encontrado. Acesse o painel admin para cadastrar produtos.');

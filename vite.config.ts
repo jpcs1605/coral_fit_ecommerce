@@ -7,6 +7,7 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   base: '/coral_fit_ecommerce',
+  publicDir: 'public', // Garante que arquivos da pasta public sejam copiados
   build: {
     target: 'esnext',
     outDir: 'build',
