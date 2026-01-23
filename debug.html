@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico - Coral Fit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 { color: #333; }
+        button {
+            background: #0891b2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover { background: #0e7490; }
+        button.danger { background: #dc2626; }
+        button.danger:hover { background: #b91c1c; }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status.ok { background: #dcfce7; color: #166534; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+        .status.warning { background: #fef3c7; color: #92400e; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th { background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Diagnóstico do Sistema - Coral Fit</h1>
+
+    <div class="card">
+        <h2>Status do LocalStorage</h2>
+        <div id="storage-status"></div>
+        <button onclick="verificarStorage()">🔄 Verificar</button>
+        <button onclick="limparTudo()" class="danger">🗑️ Limpar Tudo</button>
+    </div>
+
+    <div class="card">
+        <h2>Produtos Cadastrados</h2>
+        <div id="products-list"></div>
+    </div>
+
+    <div class="card">
+        <h2>Teste de Gravação</h2>
+        <button onclick="testarGravacao()">✏️ Criar Produto de Teste</button>
+        <button onclick="carregarDados()">📥 Carregar Dados</button>
+        <pre id="test-result"></pre>
+    </div>
+
+    <div class="card">
+        <h2>Informações do Navegador</h2>
+        <div id="browser-info"></div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'coral_fit_products';
+
+        function verificarStorage() {
+            const info = document.getElementById('storage-status');
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                
+                if (!data) {
+                    info.innerHTML = '<span class="status warning">⚠️ Nenhum dado encontrado</span>';
+                } else {
+                    const products = JSON.parse(data);
+                    const size = (data.length / 1024).toFixed(2);
+                    info.innerHTML = `
+                        <span class="status ok">✓ Dados encontrados</span>
+                        <p><strong>Produtos:</strong> ${products.length}</p>
+                        <p><strong>Tamanho:</strong> ${size} KB</p>
+                    `;
+                }
+                carregarDados();
+            } catch (error) {
+                info.innerHTML = `<span class="status error">✗ Erro: ${error.message}</span>`;
+            }
+        }
+
+        function carregarDados() {
+            const container = document.getElementById('products-list');
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                
+                if (!data) {
+                    container.innerHTML = '<p>Nenhum produto cadastrado.</p>';
+                    return;
+                }
+                
+                const products = JSON.parse(data);
+                
+                if (products.length === 0) {
+                    container.innerHTML = '<p>Lista de produtos vazia.</p>';
+                    return;
+                }
+                
+                let html = `<p>Total: ${products.length} produtos</p><table>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nome</th>
+                        <th>Preço</th>
+                        <th>Categoria</th>
+                        <th>Imagens</th>
+                        <th>Ações</th>
+                    </tr>`;
+                
+                products.forEach((p, index) => {
+                    html += `<tr>
+                        <td>${p.code}</td>
+                        <td>${p.name}</td>
+                        <td>R$ ${p.price.toFixed(2)}</td>
+                        <td>${p.category}</td>
+                        <td>${p.images?.length || 0}</td>
+                        <td><button onclick="removerProduto(${index})" class="danger">Remover</button></td>
+                    </tr>`;
+                });
+                
+                html += '</table>';
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = `<span class="status error">Erro ao carregar: ${error.message}</span>`;
+            }
+        }
+
+        function testarGravacao() {
+            const result = document.getElementById('test-result');
+            try {
+                const products = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                
+                const testProduct = {
+                    id: Date.now().toString(),
+                    code: 'TEST-' + Date.now(),
+                    name: 'Produto de Teste ' + new Date().toLocaleTimeString(),
+                    category: 'Teste',
+                    description: 'Produto criado para teste',
+                    price: 99.90,
+                    pricePaid: 50.00,
+                    images: [],
+                    image: '',
+                    colors: [{ name: 'Azul', hex: '#0000ff' }],
+                    sizes: ['M'],
+                    tags: ['teste'],
+                    stock: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                };
+                
+                products.push(testProduct);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+                
+                result.textContent = '✓ Produto de teste criado com sucesso!\n\n' + 
+                    JSON.stringify(testProduct, null, 2);
+                
+                verificarStorage();
+                carregarDados();
+            } catch (error) {
+                result.textContent = '✗ Erro ao criar produto de teste:\n' + error.message;
+            }
+        }
+
+        function removerProduto(index) {
+            if (!confirm('Remover este produto?')) return;
+            
+            try {
+                const products = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                products.splice(index, 1);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+                carregarDados();
+                verificarStorage();
+            } catch (error) {
+                alert('Erro ao remover produto: ' + error.message);
+            }
+        }
+
+        function limparTudo() {
+            if (!confirm('Tem certeza? Todos os produtos serão removidos!')) return;
+            localStorage.removeItem(STORAGE_KEY);
+            verificarStorage();
+            carregarDados();
+        }
+
+        function mostrarInfoNavegador() {
+            const info = document.getElementById('browser-info');
+            info.innerHTML = `
+                <p><strong>Navegador:</strong> ${navigator.userAgent}</p>
+                <p><strong>LocalStorage disponível:</strong> ${typeof(Storage) !== "undefined" ? 'Sim' : 'Não'}</p>
+                <p><strong>URL atual:</strong> ${window.location.href}</p>
+                <p><strong>Protocol:</strong> ${window.location.protocol}</p>
+            `;
+        }
+
+        // Executar ao carregar
+        verificarStorage();
+        mostrarInfoNavegador();
+    </script>
+</body>
+</html>

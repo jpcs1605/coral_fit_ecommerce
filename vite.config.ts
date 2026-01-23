@@ -2,10 +2,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
   base: '/coral_fit_ecommerce',
+  build: {
+    target: 'esnext',
+    outDir: 'build',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        admin: resolve(__dirname, 'admin.html'),
+      },
+    },
+  },
   resolve: {
     extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
     alias: {
@@ -50,10 +61,6 @@ export default defineConfig({
       '@radix-ui/react-accordion@1.2.3': '@radix-ui/react-accordion',
       '@': path.resolve(__dirname, './src'),
     },
-  },
-  build: {
-    target: 'esnext',
-    outDir: 'build',
   },
   server: {
     port: 3000,

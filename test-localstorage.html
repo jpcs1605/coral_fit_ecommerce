@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste LocalStorage</title>
+</head>
+<body>
+    <h1>Teste de LocalStorage</h1>
+    <button onclick="testar()">Testar</button>
+    <button onclick="limpar()">Limpar</button>
+    <button onclick="ver()">Ver Dados</button>
+    <pre id="resultado"></pre>
+    
+    <script>
+        function testar() {
+            const testData = {
+                id: '1',
+                code: 'TEST-001',
+                name: 'Produto Teste',
+                price: 99.90
+            };
+            
+            localStorage.setItem('coral_fit_products', JSON.stringify([testData]));
+            document.getElementById('resultado').textContent = 'Dados salvos! Verifique abaixo.';
+            ver();
+        }
+        
+        function limpar() {
+            localStorage.removeItem('coral_fit_products');
+            document.getElementById('resultado').textContent = 'Dados limpos!';
+        }
+        
+        function ver() {
+            const data = localStorage.getItem('coral_fit_products');
+            document.getElementById('resultado').textContent = 
+                'coral_fit_products:\n' + (data || 'Vazio');
+        }
+        
+        // Carregar ao abrir
+        ver();
+    </script>
+</body>
+</html>

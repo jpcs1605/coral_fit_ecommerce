@@ -42,15 +42,24 @@ export function ProductGrid({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md">
-          <h3 className="text-red-800 mb-2">Erro ao carregar produtos</h3>
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={onRefresh}
-            className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors"
-          >
-            Tentar novamente
-          </button>
+        <div className="bg-red-50 border border-red-200 rounded-xl p-8 max-w-md text-center">
+          <h3 className="text-red-800 font-semibold text-lg mb-2">Erro ao carregar produtos</h3>
+          <p className="text-red-600 mb-6">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={onRefresh}
+              className="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700 transition-colors w-full flex items-center justify-center gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Tentar novamente
+            </button>
+            <a
+              href="/coral_fit_ecommerce/admin.html"
+              className="block bg-cyan-600 text-white px-6 py-2 rounded-lg hover:bg-cyan-700 transition-colors"
+            >
+              Acessar Painel Admin
+            </a>
+          </div>
         </div>
       </div>
     );
@@ -59,7 +68,19 @@ export function ProductGrid({
   if (products.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <p className="text-gray-600">Nenhum produto disponível no momento</p>
+        <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl p-8 max-w-md text-center">
+          <div className="text-6xl mb-4">📦</div>
+          <h3 className="text-gray-800 font-semibold text-lg mb-2">Nenhum produto cadastrado</h3>
+          <p className="text-gray-600 mb-6">
+            Use o painel administrativo para cadastrar seus produtos e começar a vender!
+          </p>
+          <a
+            href="/coral_fit_ecommerce/admin.html"
+            className="inline-block bg-cyan-600 text-white px-6 py-3 rounded-lg hover:bg-cyan-700 transition-colors font-medium"
+          >
+            Acessar Painel Admin
+          </a>
+        </div>
       </div>
     );
   }
