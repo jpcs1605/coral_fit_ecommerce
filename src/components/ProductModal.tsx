@@ -81,7 +81,7 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
             </span>
 
             <h2 className="text-gray-800 mb-3">{product.name}</h2>
-            <p className="text-gray-600 mb-4">{product.description}</p>
+            <p className="text-gray-600 mb-4 whitespace-pre-line">{product.description}</p>
             <div className="text-cyan-600 mb-6">
               R$ {product.price.toFixed(2).replace('.', ',')}
             </div>
@@ -158,7 +158,7 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
 
             {!isColorAvailableForSize(selectedColor, selectedSize) && (
               <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
-                ⚠️ Esta combinação de cor e tamanho não está disponível. Escolha outra opção.
+                Esta combinação de cor e tamanho não está disponível no momento. Escolha outra opção.
               </div>
             )}
 

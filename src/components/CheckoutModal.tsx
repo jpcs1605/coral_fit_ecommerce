@@ -187,7 +187,6 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
       message += `${formData.city} - ${formData.state}\n`;
       message += `CEP: ${formData.zipCode}\n`;
       if (shippingInfo) {
-        message += `Distância: ${shippingInfo.distance.toFixed(1)} km\n`;
         message += `Valor do frete: ${shippingInfo.formattedPrice}\n`;
       }
     } else {
@@ -323,10 +322,6 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                         <Truck className="w-4 h-4 inline mr-1" />
                         Frete calculado: <span className="font-semibold">{shippingInfo.formattedPrice}</span>
                       </p>
-                      <p className="text-xs text-green-600 mt-1">
-                        Distância: {shippingInfo.distance.toFixed(1)} km
-                        {shippingInfo.isEstimated && ' (estimativa)'}
-                      </p>
                     </div>
                   )}
                 </div>
@@ -340,9 +335,8 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                     required
                     value={formData.street}
                     onChange={(e) => updateField('street', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all bg-gray-50"
-                    placeholder="Preenchido automaticamente"
-                    readOnly
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                    placeholder="Digite o endereço ou será preenchido pelo CEP"
                   />
                 </div>
 
@@ -378,9 +372,8 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                     required
                     value={formData.neighborhood}
                     onChange={(e) => updateField('neighborhood', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all bg-gray-50"
-                    placeholder="Preenchido automaticamente"
-                    readOnly
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                    placeholder="Digite o bairro ou será preenchido pelo CEP"
                   />
                 </div>
 
@@ -392,9 +385,8 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                       required
                       value={formData.city}
                       onChange={(e) => updateField('city', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all bg-gray-50"
-                      placeholder="Preenchido automaticamente"
-                      readOnly
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                      placeholder="Digite a cidade ou será preenchido pelo CEP"
                     />
                   </div>
 
@@ -405,10 +397,9 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                       required
                       value={formData.state}
                       onChange={(e) => updateField('state', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all bg-gray-50"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
                       placeholder="UF"
                       maxLength={2}
-                      readOnly
                     />
                   </div>
                 </div>              </div>
