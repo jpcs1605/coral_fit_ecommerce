@@ -1,6 +1,64 @@
 import { Coupon } from '../types';
 
+
 const STORAGE_KEY = 'coral_fit_coupons';
+// URL do arquivo JSON no GitHub (raw)
+const COUPONS_JSON_URL = 'https://raw.githubusercontent.com/jpcs1605/coral_fit_ecommerce/main/public/coupons.json';
+// Fallback para arquivo local
+const COUPONS_JSON_URL_LOCAL = '/coupons.json';
+
+// Função para carregar cupons do arquivo JSON (GitHub ou local)
+async function loadCouponsFromJSON(): Promise<Coupon[]> {
+  try {
+    // Tenta primeiro do GitHub
+    console.log('[CouponService] Buscando cupons do GitHub...');
+    let response = await fetch(COUPONS_JSON_URL);
+    // Se falhar, tenta do arquivo local
+    if (!response.ok) {
+      console.warn('Falha ao buscar do GitHub, tentando arquivo local...');
+      response = await fetch(COUPONS_JSON_URL_LOCAL);
+    }
+    if (!response.ok) {
+      console.warn('Arquivo coupons.json não encontrado');
+      return [];
+    }
+    const coupons = await response.json();
+    console.log('[CouponService] ✓ Cupons carregados do JSON:', coupons.length);
+    return coupons;
+  } catch (error) {
+    console.error('Erro ao carregar coupons.json:', error);
+    return [];
+  }
+}
+
+// Carregar cupons (async) - busca do GitHub primeiro, localStorage como fallback
+export async function loadCouponsAsync(): Promise<Coupon[]> {
+  try {
+    // SEMPRE tenta buscar do GitHub primeiro
+    console.log('[CouponService] Buscando cupons do GitHub...');
+    const couponsFromJSON = await loadCouponsFromJSON();
+    if (couponsFromJSON.length > 0) {
+      // Salva no localStorage para futuras consultas offline
+      saveCoupons(couponsFromJSON);
+      console.log('[CouponService] ✓ Cupons do GitHub salvos no localStorage');
+      return couponsFromJSON;
+    }
+    // Se falhou ao buscar do GitHub, tenta localStorage como fallback
+    console.log('[CouponService] Falha ao buscar do GitHub, usando localStorage...');
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const coupons = JSON.parse(stored);
+      if (coupons.length > 0) {
+        console.log('[CouponService] Cupons carregados do localStorage (fallback):', coupons.length);
+        return coupons;
+      }
+    }
+    return [];
+  } catch (error) {
+    console.error('Erro ao carregar cupons:', error);
+    return [];
+  }
+}
 
 // Carregar cupons do localStorage
 export function loadCoupons(): Coupon[] {

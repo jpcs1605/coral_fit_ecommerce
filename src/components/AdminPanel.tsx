@@ -22,6 +22,7 @@ import {
 import { ProductForm } from './ProductForm';
 import { StockManager } from './StockManager';
 import { CouponManager } from './CouponManager';
+import { downloadCouponsJSON } from '../services/couponService';
 
 // Credenciais hardcoded (em produção, use autenticação adequada)
 const ADMIN_CREDENTIALS = {
@@ -587,6 +588,22 @@ export function AdminPanel({}: AdminPanelProps) {
 
           {/* Coupons Tab */}
           <TabsContent value="coupons">
+            <div className="flex items-center gap-2 mb-4">
+              <Button 
+                variant="default" 
+                onClick={() => {
+                  downloadCouponsJSON();
+                  if (typeof window !== 'undefined' && window?.showToast) {
+                    window.showToast('✓ coupons.json baixado! Copie para public/coupons.json no projeto.', 'success');
+                  }
+                }}
+                className="gap-2 bg-green-600 hover:bg-green-700"
+                title="Baixar coupons.json para copiar para public/"
+              >
+                <Save className="h-4 w-4" />
+                Gerar coupons.json
+              </Button>
+            </div>
             <CouponManager />
           </TabsContent>
         </Tabs>
