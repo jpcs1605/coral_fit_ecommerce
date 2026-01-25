@@ -46,3 +46,18 @@ export interface CheckoutFormData {
   zipCode: string;
   deliveryType: 'pickup' | 'delivery';
 }
+
+export interface Coupon {
+  id: string;
+  code: string; // Código do cupom (ex: VERAO2024)
+  discount: number; // Valor do desconto
+  discountType: 'percentage' | 'fixed'; // Tipo: porcentagem ou valor fixo
+  expiryDate: string; // Data de validade (ISO string)
+  isActive: boolean; // Se o cupom está ativo
+  minPurchaseAmount?: number; // Valor mínimo de compra (opcional)
+  maxDiscount?: number; // Desconto máximo (para porcentagem)
+  usageLimit?: number; // Limite de usos totais
+  usageCount: number; // Contador de usos
+  createdAt: string;
+  updatedAt: string;
+}

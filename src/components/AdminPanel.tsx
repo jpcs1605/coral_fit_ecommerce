@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Label } from './ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Alert, AlertDescription } from './ui/alert';
-import { LogOut, Package, DollarSign, RefreshCw, Plus, Edit, Trash2, Download, Upload, Eye, Box, Save } from 'lucide-react';
+import { LogOut, Package, DollarSign, RefreshCw, Plus, Edit, Trash2, Download, Upload, Eye, Box, Save, Tag } from 'lucide-react';
 import { Product } from '../types';
 import { 
   loadProducts as loadProductsFromService, 
@@ -21,6 +21,7 @@ import {
 } from '../services/productService';
 import { ProductForm } from './ProductForm';
 import { StockManager } from './StockManager';
+import { CouponManager } from './CouponManager';
 
 // Credenciais hardcoded (em produção, use autenticação adequada)
 const ADMIN_CREDENTIALS = {
@@ -48,6 +49,7 @@ export function AdminPanel({}: AdminPanelProps) {
   const [managingStockProduct, setManagingStockProduct] = useState<Product | null>(null);
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState<Product | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [activeTab, setActiveTab] = useState<'products' | 'coupons'>('products');
 
   // Carregar produtos quando autenticado
   useEffect(() => {
@@ -382,8 +384,23 @@ export function AdminPanel({}: AdminPanelProps) {
           </AlertDescription>
         </Alert>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'products' | 'coupons')} className="space-y-6">
+          <TabsList className="grid w-full max-w-md grid-cols-2">
+            <TabsTrigger value="products" className="gap-2">
+              <Package className="h-4 w-4" />
+              Produtos
+            </TabsTrigger>
+            <TabsTrigger value="coupons" className="gap-2">
+              <Tag className="h-4 w-4" />
+              Cupons
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Products Tab */}
+          <TabsContent value="products" className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
@@ -566,6 +583,13 @@ export function AdminPanel({}: AdminPanelProps) {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          {/* Coupons Tab */}
+          <TabsContent value="coupons">
+            <CouponManager />
+          </TabsContent>
+        </Tabs>
       </main>
 
       {/* Delete Confirmation Dialog */}

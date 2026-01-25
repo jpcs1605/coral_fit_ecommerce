@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { X, MapPin, Phone, User, Home, Package, Truck, Loader2 } from 'lucide-react';
-import { CartItem, CheckoutFormData } from '../types';
+import { X, MapPin, Phone, User, Home, Package, Truck, Loader2, Tag, Check, AlertCircle, ChevronDown } from 'lucide-react';
+import { CartItem, CheckoutFormData, Coupon } from '../types';
 import { calculateShipping } from '../services/googleSheets';
+import { validateCoupon, useCoupon } from '../services/couponService';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -34,6 +35,13 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
   const [shippingError, setShippingError] = useState<string | null>(null);
   const [isLoadingCep, setIsLoadingCep] = useState(false);
   const [cepError, setCepError] = useState<string | null>(null);
+  
+  // Estados para cupom
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [isCouponExpanded, setIsCouponExpanded] = useState(false);
 
   // Buscar dados do CEP automaticamente
   useEffect(() => {
@@ -145,7 +153,8 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
 
   const subtotal = items.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
   const shippingCost = formData.deliveryType === 'delivery' && shippingInfo ? shippingInfo.price : 0;
-  const total = subtotal + shippingCost;
+  const subtotalWithShipping = subtotal + shippingCost;
+  const total = subtotalWithShipping - couponDiscount;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,6 +177,10 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
     
     if (formData.deliveryType === 'delivery' && shippingInfo) {
       message += `*Frete (${shippingInfo.distance.toFixed(1)} km): R$ ${shippingInfo.price.toFixed(2).replace('.', ',')}*\n`;
+    }
+    
+    if (appliedCoupon && couponDiscount > 0) {
+      message += `*Cupom (${appliedCoupon.code}): -R$ ${couponDiscount.toFixed(2).replace('.', ',')}*\n`;
     }
     
     message += `*TOTAL: R$ ${total.toFixed(2).replace('.', ',')}*\n`;
@@ -199,12 +212,48 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
     
+    // Registrar uso do cupom
+    if (appliedCoupon) {
+      try {
+        useCoupon(appliedCoupon.code);
+      } catch (error) {
+        console.error('Erro ao registrar uso do cupom:', error);
+      }
+    }
+    
     window.open(whatsappUrl, '_blank');
     onSuccess();
   };
 
   const updateField = (field: keyof CheckoutFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleApplyCoupon = () => {
+    setCouponError(null);
+    if (!couponCode.trim()) {
+      setCouponError('Digite um código de cupom');
+      return;
+    }
+    const result = validateCoupon(couponCode, subtotalWithShipping);
+    if (result.isValid && result.coupon && result.discountAmount !== undefined) {
+      setAppliedCoupon(result.coupon);
+      setCouponDiscount(result.discountAmount);
+      setCouponError(null);
+    } else {
+      setCouponError(result.error || 'Cupom inválido');
+      setAppliedCoupon(null);
+      setCouponDiscount(0);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setCouponCode('');
+    setAppliedCoupon(null);
+    setCouponDiscount(0);
+    setCouponError(null);
+    setCouponSuccess(null);
+    setIsCouponExpanded(false);
   };
 
   return (
@@ -406,6 +455,94 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
             )}
           </div>
 
+          {/* Seção de Cupom (Sanfona) */}
+          <div className="mb-6">
+            {/* Botão para expandir/recolher */}
+            <button
+              type="button"
+              onClick={() => setIsCouponExpanded(!isCouponExpanded)}
+              className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition-all border-2 border-transparent hover:border-purple-200"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                  <Tag className="w-5 h-5 text-purple-600" />
+                </div>
+                <div className="text-left">
+                  <p className="font-semibold text-gray-800">
+                    {appliedCoupon ? 'Cupom Aplicado!' : 'Tem um cupom de desconto?'}
+                  </p>
+                  <p className="text-xs text-gray-600">
+                    {appliedCoupon 
+                      ? `${appliedCoupon.code} - Economize R$ ${couponDiscount.toFixed(2).replace('.', ',')}`
+                      : 'Clique para inserir seu código'
+                    }
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {appliedCoupon && (
+                  <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">
+                    -R$ {couponDiscount.toFixed(2).replace('.', ',')}
+                  </span>
+                )}
+                <ChevronDown 
+                  className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${
+                    isCouponExpanded ? 'rotate-180' : ''
+                  }`} 
+                />
+              </div>
+            </button>
+            
+            {/* Conteúdo expansivel da sanfona */}
+            {isCouponExpanded && (
+              <div className="mt-4">
+                <div className="bg-white border-2 border-purple-100 rounded-xl p-4">
+                  <div className="flex gap-2 mb-3">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleApplyCoupon())}
+                        disabled={!!appliedCoupon}
+                        className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed uppercase"
+                        placeholder="Digite o código do cupom"
+                      />
+                      <Tag className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    </div>
+                    {!appliedCoupon && (
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={!couponCode.trim()}
+                        className="px-6 py-3 bg-cyan-500 text-white rounded-xl hover:bg-cyan-600 transition-all disabled:text-white disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2 font-medium whitespace-nowrap flex-shrink-0"
+                        style={!couponCode.trim() ? { backgroundColor: '#06b6d4' } : {}}
+                      >
+                        Aplicar
+                      </button>
+                    )}
+                    {appliedCoupon && (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-all flex items-center gap-2 font-medium whitespace-nowrap flex-shrink-0"
+                      >
+                        <X className="w-4 h-4" />
+                        Remover
+                      </button>
+                    )}
+                  </div>
+                  {couponError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                      <p className="text-sm text-red-700">{couponError}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4 mb-6">
             <h4 className="text-gray-800 mb-3 font-semibold">Resumo do Pedido</h4>
             
@@ -452,6 +589,19 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                   ) : (
                     <span className="text-xs text-gray-500">Informe o CEP</span>
                   )}
+                </span>
+              </div>
+            )}
+
+            {/* Cupom de Desconto */}
+            {appliedCoupon && couponDiscount > 0 && (
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-700 flex items-center gap-1">
+                  <Tag className="w-4 h-4" />
+                  Cupom ({appliedCoupon.code})
+                </span>
+                <span className="text-green-600 font-medium">
+                  -R$ {couponDiscount.toFixed(2).replace('.', ',')}
                 </span>
               </div>
             )}
