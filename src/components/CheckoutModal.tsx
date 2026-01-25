@@ -12,7 +12,10 @@ interface CheckoutModalProps {
 }
 
 export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutModalProps) {
-    const [isDeliverySectionOpen, setIsDeliverySectionOpen] = useState(true);
+  const [isDeliverySectionOpen, setIsDeliverySectionOpen] = useState(true);
+  // Estado para sanfona de pagamento
+  const [isPaymentExpanded, setIsPaymentExpanded] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('');
   const [formData, setFormData] = useState<CheckoutFormData>({
     name: '',
     phone: '',
@@ -163,7 +166,9 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
     let message = `*NOVO PEDIDO - CORAL FIT*\n\n`;
     message += `*Cliente:* ${formData.name}\n`;
     message += `*Telefone:* ${formData.phone}\n\n`;
-    
+    message += `*Método de Pagamento:* ${
+      paymentMethod === 'pix' ? 'PIX' : paymentMethod === 'credito' ? 'Cartão de Crédito' : paymentMethod === 'debito' ? 'Cartão de Débito' : 'Não informado'
+    }\n\n`;
     message += `*ITENS DO PEDIDO:*\n`;
     items.forEach((item, index) => {
       message += `\n${index + 1}. *${item.product.name}*\n`;
@@ -529,8 +534,60 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
               </div>
             )}
           </div>
+          {/* Sanfona: Seleção de método de pagamento */}
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={() => setIsPaymentExpanded && setIsPaymentExpanded((v) => !v)}
+                className="w-full flex items-center justify-between p-4 bg-cyan-50 hover:bg-cyan-100 rounded-xl transition-all border-2 border-cyan-100 mb-2"
+              >
+                <span className="font-semibold text-cyan-700">Selecione o método de pagamento</span>
+                <span className={`transition-transform text-cyan-700 ${isPaymentExpanded ? 'rotate-180' : ''}`}>▼</span>
+              </button>
+              {isPaymentExpanded && (
+                <div className="mt-4">
+                  <div className="bg-white border-2 border-cyan-100 rounded-xl p-4 flex flex-col gap-3">
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="pix"
+                        checked={paymentMethod === 'pix'}
+                        onChange={() => setPaymentMethod('pix')}
+                        className="accent-cyan-500 w-5 h-5"
+                      />
+                      <span className="font-medium text-cyan-700">PIX</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="credito"
+                        checked={paymentMethod === 'credito'}
+                        onChange={() => setPaymentMethod('credito')}
+                        className="accent-cyan-500 w-5 h-5"
+                      />
+                      <span className="font-medium text-cyan-700">Cartão de Crédito</span>
+                    </label>
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="debito"
+                        checked={paymentMethod === 'debito'}
+                        onChange={() => setPaymentMethod('debito')}
+                        className="accent-cyan-500 w-5 h-5"
+                      />
+                      <span className="font-medium text-cyan-700">Cartão de Débito</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+            </div>
 
           <div className="bg-gradient-to-br from-cyan-50 to-blue-50 rounded-xl p-4 mb-6">
+            
+
             <h4 className="text-gray-800 mb-3 font-semibold">Resumo do Pedido</h4>
             
             {/* Lista de produtos */}
