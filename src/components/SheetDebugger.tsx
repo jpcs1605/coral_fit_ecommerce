@@ -24,15 +24,7 @@ export function SheetDebugger() {
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
-      <button
-        onClick={testFetch}
-        disabled={loading}
-        className="bg-purple-600 text-white p-3 rounded-full shadow-lg hover:bg-purple-700 transition-colors"
-        title="Debug: Testar conexão com planilha"
-      >
-        <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-      </button>
-      
+      {/* Botão de debug removido */}
       {data && (
         <div className="absolute bottom-16 right-0 bg-white p-4 rounded-lg shadow-xl max-w-md max-h-96 overflow-auto border">
           <h4 className="mb-2">Dados da Planilha:</h4>

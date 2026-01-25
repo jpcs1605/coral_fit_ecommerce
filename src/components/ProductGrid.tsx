@@ -155,14 +155,7 @@ export function ProductGrid({
           </button>
         ))}
 
-        <button
-          onClick={onRefresh}
-          disabled={loading}
-          className="p-2 rounded-full bg-white text-cyan-600 hover:bg-cyan-50 transition-colors shadow-md"
-          title="Recarregar produtos da planilha"
-        >
-          <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-        </button>
+        {/* Botão de atualizar planilha removido */}
       </div>
 
       {searchFilteredProducts.length === 0 ? (

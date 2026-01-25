@@ -3,16 +3,9 @@ import { X, CheckCircle, AlertCircle, ExternalLink } from 'lucide-react';
 
 export function SetupGuide() {
   const [isOpen, setIsOpen] = useState(false);
-
+  // Removido botão de configurar planilha
   if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 left-4 z-50 bg-cyan-600 text-white px-4 py-2 rounded-full shadow-lg hover:bg-cyan-700 transition-colors text-sm"
-      >
-        📊 Configurar Planilha
-      </button>
-    );
+    return null;
   }
 
   return (
