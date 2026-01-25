@@ -404,8 +404,8 @@ export function CouponManager() {
               </Button>
             </div>
           ) : (
-            {/* Accordion para cupons */}
             <div className="w-full">
+              {/* Accordion para cupons */}
               <Accordion type="single" collapsible>
                 {coupons.map((coupon) => (
                   <AccordionItem key={coupon.id} value={coupon.id.toString()}>
