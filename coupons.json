@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "code": "CORAL5",
+    "discount": 5,
+    "discountType": "percentage",
+    "expiryDate": "2026-01-26T02:59:59.999Z",
+    "isActive": true,
+    "id": "1769382362045-ojyw8endd",
+    "usageCount": 0,
+    "createdAt": "2026-01-25T23:06:02.045Z",
+    "updatedAt": "2026-01-25T23:06:02.045Z"
+  }
+]
