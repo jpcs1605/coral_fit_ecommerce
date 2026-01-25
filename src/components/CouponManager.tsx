@@ -404,102 +404,85 @@ export function CouponManager() {
               </Button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 px-4">Código</th>
-                    <th className="text-left py-3 px-4">Desconto</th>
-                    <th className="text-left py-3 px-4">Validade</th>
-                    <th className="text-center py-3 px-4">Status</th>
-                    <th className="text-center py-3 px-4">Usos</th>
-                    <th className="text-center py-3 px-4">Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {coupons.map((coupon) => (
-                    <tr key={coupon.id} className="border-b hover:bg-gray-50">
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className="font-mono font-semibold text-cyan-600">{coupon.code}</p>
-                          {coupon.minPurchaseAmount && (
-                            <p className="text-xs text-gray-500">
-                              Mín: R$ {coupon.minPurchaseAmount.toFixed(2)}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className="font-semibold">
-                            {coupon.discountType === 'percentage' 
-                              ? `${coupon.discount}%` 
-                              : `R$ ${coupon.discount.toFixed(2)}`
-                            }
-                          </p>
-                          {coupon.discountType === 'percentage' && coupon.maxDiscount && (
-                            <p className="text-xs text-gray-500">
-                              Máx: R$ {coupon.maxDiscount.toFixed(2)}
-                            </p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div>
-                          <p className={isExpired(coupon.expiryDate) ? 'text-red-600' : 'text-gray-900'}>
-                            {new Date(coupon.expiryDate).toLocaleDateString('pt-BR')}
-                          </p>
-                          {isExpired(coupon.expiryDate) && (
-                            <p className="text-xs text-red-600">Expirado</p>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
-                          coupon.isActive && !isExpired(coupon.expiryDate)
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
-                          {coupon.isActive && !isExpired(coupon.expiryDate) ? (
-                            <><CheckCircle2 className="h-3 w-3" /> Ativo</>
-                          ) : (
-                            <><XCircle className="h-3 w-3" /> Inativo</>
-                          )}
+            {/* Accordion para cupons */}
+            <div className="w-full">
+              <Accordion type="single" collapsible>
+                {coupons.map((coupon) => (
+                  <AccordionItem key={coupon.id} value={coupon.id.toString()}>
+                    <AccordionTrigger className="flex flex-row items-center justify-between px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        <span className="font-mono font-semibold text-cyan-600">{coupon.code}</span>
+                        <span className="text-xs text-gray-500">
+                          {coupon.discountType === 'percentage' ? `${coupon.discount}%` : `R$ ${coupon.discount.toFixed(2)}`}
+                          {coupon.discountType === 'percentage' && coupon.maxDiscount ? ` | Máx: R$ ${coupon.maxDiscount.toFixed(2)}` : ''}
                         </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
+                      </div>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
+                        coupon.isActive && !isExpired(coupon.expiryDate)
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {coupon.isActive && !isExpired(coupon.expiryDate) ? (
+                          <><CheckCircle2 className="h-3 w-3" /> Ativo</>
+                        ) : (
+                          <><XCircle className="h-3 w-3" /> Inativo</>
+                        )}
+                      </span>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4">
+                      <div className="grid grid-cols-2 gap-4 mb-2">
                         <div>
-                          <p className="font-semibold">{coupon.usageCount}</p>
-                          {coupon.usageLimit && (
-                            <p className="text-xs text-gray-500">/ {coupon.usageLimit}</p>
+                          <span className="block text-xs text-gray-500">Validade</span>
+                          <span className={isExpired(coupon.expiryDate) ? 'text-red-600' : 'text-gray-900'}>
+                            {new Date(coupon.expiryDate).toLocaleDateString('pt-BR')}
+                          </span>
+                          {isExpired(coupon.expiryDate) && (
+                            <span className="block text-xs text-red-600">Expirado</span>
                           )}
                         </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleEdit(coupon)}
-                            title="Editar"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => setDeleteConfirm(coupon)}
-                            title="Excluir"
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                        <div>
+                          <span className="block text-xs text-gray-500">Usos</span>
+                          <span className="font-semibold">{coupon.usageCount}</span>
+                          {coupon.usageLimit && (
+                            <span className="text-xs text-gray-500">/ {coupon.usageLimit}</span>
+                          )}
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        {coupon.minPurchaseAmount && (
+                          <div>
+                            <span className="block text-xs text-gray-500">Mínimo</span>
+                            <span>R$ {coupon.minPurchaseAmount.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {coupon.discountType === 'percentage' && coupon.maxDiscount && (
+                          <div>
+                            <span className="block text-xs text-gray-500">Desconto Máx.</span>
+                            <span>R$ {coupon.maxDiscount.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex gap-2 justify-end mt-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEdit(coupon)}
+                          title="Editar"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setDeleteConfirm(coupon)}
+                          title="Excluir"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
           )}
         </CardContent>

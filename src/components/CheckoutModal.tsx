@@ -12,6 +12,7 @@ interface CheckoutModalProps {
 }
 
 export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutModalProps) {
+    const [isDeliverySectionOpen, setIsDeliverySectionOpen] = useState(true);
   const [formData, setFormData] = useState<CheckoutFormData>({
     name: '',
     phone: '',
@@ -272,9 +273,9 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          <div className="mb-6">
+          {/* Dados Pessoais */}
+          <section className="mb-6">
             <h3 className="text-gray-800 mb-4">Dados Pessoais</h3>
-            
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">
                 <User className="w-4 h-4 inline mr-2" />
@@ -289,7 +290,6 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                 placeholder="Seu nome"
               />
             </div>
-
             <div className="mb-4">
               <label className="block text-gray-700 mb-2">
                 <Phone className="w-4 h-4 inline mr-2" />
@@ -304,199 +304,180 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                 placeholder="(11) 99999-9999"
               />
             </div>
-          </div>
+          </section>
 
-          <div className="mb-6">
-            <h3 className="text-gray-800 mb-4">Tipo de Entrega</h3>
-            
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <button
-                type="button"
-                onClick={() => updateField('deliveryType', 'delivery')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  formData.deliveryType === 'delivery'
-                    ? 'border-cyan-500 bg-cyan-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <Truck className="w-8 h-8 mx-auto mb-2 text-cyan-600" />
-                <span className="block text-sm">Entrega</span>
-                <span className="block text-xs text-gray-500 mt-1">Frete por sua conta</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => updateField('deliveryType', 'pickup')}
-                className={`p-4 rounded-xl border-2 transition-all ${
-                  formData.deliveryType === 'pickup'
-                    ? 'border-cyan-500 bg-cyan-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <Package className="w-8 h-8 mx-auto mb-2 text-cyan-600" />
-                <span className="block text-sm">Retirada</span>
-                <span className="block text-xs text-gray-500 mt-1">Retirar na loja</span>
-              </button>
-            </div>
-
-            {formData.deliveryType === 'delivery' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-gray-700 mb-2">
-                    <MapPin className="w-4 h-4 inline mr-2" />
-                    CEP
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      value={formData.zipCode}
-                      onChange={(e) => updateField('zipCode', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                      placeholder="00000-000"
-                      maxLength={9}
-                    />
-                    {(isCalculatingShipping || isLoadingCep) && (
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                        <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
+          {/* Tipo de Entrega - Accordion */}
+          <section className="mb-6">
+            <button
+              type="button"
+              onClick={() => setIsDeliverySectionOpen((open) => !open)}
+              className="w-full flex items-center justify-between p-4 bg-cyan-50 hover:bg-cyan-100 rounded-xl transition-all border-2 border-cyan-100 mb-2"
+            >
+              <span className="font-semibold text-cyan-700">Tipo de Entrega</span>
+              <span className={`transition-transform ${isDeliverySectionOpen ? 'rotate-180' : ''}`}>▼</span>
+            </button>
+            {isDeliverySectionOpen && (
+              <div>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => updateField('deliveryType', 'delivery')}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      formData.deliveryType === 'delivery'
+                        ? 'border-cyan-500 bg-cyan-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <Truck className="w-8 h-8 mx-auto mb-2 text-cyan-600" />
+                    <span className="block text-sm">Entrega</span>
+                    <span className="block text-xs text-gray-500 mt-1">Frete por sua conta</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateField('deliveryType', 'pickup')}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      formData.deliveryType === 'pickup'
+                        ? 'border-cyan-500 bg-cyan-50'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <Package className="w-8 h-8 mx-auto mb-2 text-cyan-600" />
+                    <span className="block text-sm">Retirada</span>
+                    <span className="block text-xs text-gray-500 mt-1">Retirar na loja</span>
+                  </button>
+                </div>
+                {/* Endereço só aparece se for entrega */}
+                {formData.deliveryType === 'delivery' && (
+                  <section className="space-y-4">
+                    <div>
+                      <label className="block text-gray-700 mb-2">
+                        <MapPin className="w-4 h-4 inline mr-2" />
+                        CEP
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          required
+                          value={formData.zipCode}
+                          onChange={(e) => updateField('zipCode', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                          placeholder="00000-000"
+                          maxLength={9}
+                        />
+                        {(isCalculatingShipping || isLoadingCep) && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <Loader2 className="w-5 h-5 animate-spin text-cyan-500" />
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  {shippingError && (
-                    <p className="text-red-500 text-sm mt-2">{shippingError}</p>
-                  )}
-                  {shippingInfo && !isCalculatingShipping && (
-                    <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-700">
-                        <Truck className="w-4 h-4 inline mr-1" />
-                        Frete calculado: <span className="font-semibold">{shippingInfo.formattedPrice}</span>
-                      </p>
+                      {shippingError && (
+                        <p className="text-red-500 text-sm mt-2">{shippingError}</p>
+                      )}
+                      {shippingInfo && !isCalculatingShipping && (
+                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                          <p className="text-sm text-green-700">
+                            <Truck className="w-4 h-4 inline mr-1" />
+                            Frete calculado: <span className="font-semibold">{shippingInfo.formattedPrice}</span>
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-gray-700 mb-2">
-                    <Home className="w-4 h-4 inline mr-2" />
-                    Rua/Avenida
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.street}
-                    onChange={(e) => updateField('street', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                    placeholder="Digite o endereço ou será preenchido pelo CEP"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-700 mb-2">Número</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.number}
-                      onChange={(e) => updateField('number', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Nº"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 mb-2">Complemento</label>
-                    <input
-                      type="text"
-                      value={formData.complement}
-                      onChange={(e) => updateField('complement', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Apto, bloco, etc."
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-gray-700 mb-2">Bairro</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.neighborhood}
-                    onChange={(e) => updateField('neighborhood', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                    placeholder="Digite o bairro ou será preenchido pelo CEP"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-gray-700 mb-2">Cidade</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.city}
-                      onChange={(e) => updateField('city', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Digite a cidade ou será preenchido pelo CEP"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-700 mb-2">Estado</label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.state}
-                      onChange={(e) => updateField('state', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
-                      placeholder="UF"
-                      maxLength={2}
-                    />
-                  </div>
-                </div>              </div>
+                    <div>
+                      <label className="block text-gray-700 mb-2">
+                        <Home className="w-4 h-4 inline mr-2" />
+                        Rua/Avenida
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.street}
+                        onChange={(e) => updateField('street', e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                        placeholder="Digite o endereço ou será preenchido pelo CEP"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-700 mb-2">Número</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.number}
+                          onChange={(e) => updateField('number', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                          placeholder="Nº"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-700 mb-2">Complemento</label>
+                        <input
+                          type="text"
+                          value={formData.complement}
+                          onChange={(e) => updateField('complement', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                          placeholder="Apto, bloco, etc."
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-gray-700 mb-2">Bairro</label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.neighborhood}
+                        onChange={(e) => updateField('neighborhood', e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                        placeholder="Digite o bairro ou será preenchido pelo CEP"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-gray-700 mb-2">Cidade</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.city}
+                          onChange={(e) => updateField('city', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                          placeholder="Digite a cidade ou será preenchido pelo CEP"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-700 mb-2">Estado</label>
+                        <input
+                          type="text"
+                          required
+                          value={formData.state}
+                          onChange={(e) => updateField('state', e.target.value)}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all"
+                          placeholder="UF"
+                          maxLength={2}
+                        />
+                      </div>
+                    </div>
+                  </section>
+                )}
+              </div>
             )}
-          </div>
+          </section>
 
           {/* Seção de Cupom (Sanfona) */}
           <div className="mb-6">
-            {/* Botão para expandir/recolher */}
+            {/* Botão para expandir/recolher - estilo azul igual entrega */}
             <button
               type="button"
               onClick={() => setIsCouponExpanded(!isCouponExpanded)}
-              className="w-full flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 rounded-xl transition-all border-2 border-transparent hover:border-purple-200"
+              className="w-full flex items-center justify-between p-4 bg-cyan-50 hover:bg-cyan-100 rounded-xl transition-all border-2 border-cyan-100 mb-2"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                  <Tag className="w-5 h-5 text-purple-600" />
-                </div>
-                <div className="text-left">
-                  <p className="font-semibold text-gray-800">
-                    {appliedCoupon ? 'Cupom Aplicado!' : 'Tem um cupom de desconto?'}
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {appliedCoupon 
-                      ? `${appliedCoupon.code} - Economize R$ ${couponDiscount.toFixed(2).replace('.', ',')}`
-                      : 'Clique para inserir seu código'
-                    }
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {appliedCoupon && (
-                  <span className="px-3 py-1 bg-green-500 text-white text-xs font-semibold rounded-full">
-                    -R$ {couponDiscount.toFixed(2).replace('.', ',')}
-                  </span>
-                )}
-                <ChevronDown 
-                  className={`w-5 h-5 text-gray-600 transition-transform duration-300 ${
-                    isCouponExpanded ? 'rotate-180' : ''
-                  }`} 
-                />
-              </div>
+              <span className="font-semibold text-cyan-700">
+                {appliedCoupon ? 'Cupom Aplicado!' : 'Tem um cupom de desconto?'}
+              </span>
+              <span className={`transition-transform text-cyan-700 ${isCouponExpanded ? 'rotate-180' : ''}`}>▼</span>
             </button>
-            
-            {/* Conteúdo expansivel da sanfona */}
+            {/* Conteúdo expansível da sanfona */}
             {isCouponExpanded && (
               <div className="mt-4">
-                <div className="bg-white border-2 border-purple-100 rounded-xl p-4">
+                <div className="bg-white border-2 border-cyan-100 rounded-xl p-4">
                   <div className="flex gap-2 mb-3">
                     <div className="relative flex-1">
                       <input
@@ -505,10 +486,9 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                         onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                         onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleApplyCoupon())}
                         disabled={!!appliedCoupon}
-                        className="w-full px-4 py-3 pl-10 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed uppercase"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-transparent outline-none transition-all disabled:bg-gray-100 disabled:cursor-not-allowed uppercase"
                         placeholder="Digite o código do cupom"
                       />
-                      <Tag className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                     </div>
                     {!appliedCoupon && (
                       <button
@@ -532,6 +512,13 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
                       </button>
                     )}
                   </div>
+                  {/* Info do cupom aplicado */}
+                  {appliedCoupon && (
+                    <div className="mb-2 text-cyan-700 text-sm font-semibold">
+                      {appliedCoupon.code} - Economize R$ {couponDiscount.toFixed(2).replace('.', ',')}
+                    </div>
+                  )}
+                  {/* Mensagem de erro */}
                   {couponError && (
                     <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
                       <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
