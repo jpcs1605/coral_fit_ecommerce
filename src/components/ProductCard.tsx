@@ -16,10 +16,9 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         <img 
           src={product.image} 
           alt={product.name}
-          className="object-cover group-hover:scale-100 transition-transform duration-500"
+          className="product-image transition-transform duration-500"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
           <button className="bg-white text-cyan-600 px-6 py-2 text-sm rounded-full flex items-center justify-center gap-2 hover:bg-cyan-50 transition-colors shadow-lg">
             <ShoppingCart className="w-4 h-4" />
