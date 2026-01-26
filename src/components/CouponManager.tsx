@@ -91,78 +91,18 @@ export function CouponManager() {
       discount: coupon.discount,
       discountType: coupon.discountType,
       expiryDate: coupon.expiryDate.split('T')[0],
-      isActive: coupon.isActive,
-      minPurchaseAmount: coupon.minPurchaseAmount,
-      maxDiscount: coupon.maxDiscount,
-      usageLimit: coupon.usageLimit,
-    });
-    setShowForm(true);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      // Converter data para ISO string
-      const expiryDate = new Date(formData.expiryDate);
-      expiryDate.setHours(23, 59, 59, 999); // Fim do dia
-      
-      const couponData = {
-        code: formData.code,
-        discount: formData.discount,
-        discountType: formData.discountType,
-        expiryDate: expiryDate.toISOString(),
-        isActive: formData.isActive,
-        minPurchaseAmount: formData.minPurchaseAmount || undefined,
-        maxDiscount: formData.maxDiscount || undefined,
-        usageLimit: formData.usageLimit || undefined,
-      };
-      
-      if (editingCoupon) {
-        updateCoupon(editingCoupon.id, couponData);
-        showToast('Cupom atualizado com sucesso!');
-      } else {
-        createCoupon(couponData);
-        showToast('Cupom criado com sucesso!');
-      }
-      
-      setCoupons(loadCoupons());
-      resetForm();
-    } catch (error) {
-      showToast((error as Error).message, 'error');
-    }
-  };
-
-  const handleDelete = () => {
-    if (deleteConfirm) {
-      try {
-        deleteCoupon(deleteConfirm.id);
-        showToast('Cupom excluído com sucesso!');
-        setCoupons(loadCoupons());
-        setDeleteConfirm(null);
-      } catch (error) {
-        showToast((error as Error).message, 'error');
-      }
-    }
-  };
-
-  const stats = getCouponStats();
-
-  const isExpired = (date: string) => new Date(date) < new Date();
-
-  return (
-    <div className="space-y-6">
-      {/* Toast */}
-      {toast && (
-        <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top">
-          <Alert variant={toast.type === 'error' ? 'destructive' : 'default'} className="bg-white">
-            <AlertDescription>{toast.message}</AlertDescription>
-          </Alert>
-        </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeleteConfirm(coupon)}
+                            title="Excluir"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -379,7 +319,7 @@ export function CouponManager() {
       )}
 
       {/* List */}
-      <Card>
+      <Card className="shadow-lg border-pink-200">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -394,139 +334,169 @@ export function CouponManager() {
             )}
           </div>
         </CardHeader>
-        <CardContent>
-          {coupons.length === 0 ? (
-            <div className="text-center py-12">
-              <Tag className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Nenhum cupom cadastrado
-              </h3>
-              <p className="text-gray-600 mb-4">
-                Comece criando seu primeiro cupom promocional
-              </p>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Criar Primeiro Cupom
-              </Button>
-            </div>
-          ) : (
-            <div className="w-full">
-              {/* Accordion para cupons */}
-              <Accordion type="single" collapsible>
-                {coupons.map((coupon) => (
-                  <AccordionItem key={coupon.id} value={coupon.id.toString()}>
-                    <AccordionTrigger className="flex flex-row items-center justify-between px-4 py-3">
-                      <div className="flex flex-col gap-1">
-                        <span className="font-mono font-semibold text-cyan-600">{coupon.code}</span>
-                        <span className="text-xs text-gray-500">
-                          {coupon.discountType === 'percentage' ? `${coupon.discount}%` : `R$ ${coupon.discount.toFixed(2)}`}
-                          {coupon.discountType === 'percentage' && coupon.maxDiscount ? ` | Máx: R$ ${coupon.maxDiscount.toFixed(2)}` : ''}
-                        </span>
-                      </div>
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium ${
-                        coupon.isActive && !isExpired(coupon.expiryDate)
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {coupon.isActive && !isExpired(coupon.expiryDate) ? (
-                          <><CheckCircle2 className="h-3 w-3" /> Ativo</>
-                        ) : (
-                          <><XCircle className="h-3 w-3" /> Inativo</>
-                        )}
-                      </span>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4">
-                      <div className="grid grid-cols-2 gap-4 mb-2">
-                        <div>
-                          <span className="block text-xs text-gray-500">Validade</span>
-                          <span className={isExpired(coupon.expiryDate) ? 'text-red-600' : 'text-gray-900'}>
-                            {new Date(coupon.expiryDate).toLocaleDateString('pt-BR')}
-                          </span>
-                          {isExpired(coupon.expiryDate) && (
-                            <span className="block text-xs text-red-600">Expirado</span>
-                          )}
-                        </div>
-                        <div>
-                          <span className="block text-xs text-gray-500">Usos</span>
-                          <span className="font-semibold">{coupon.usageCount}</span>
-                          {coupon.usageLimit && (
-                            <span className="text-xs text-gray-500">/ {coupon.usageLimit}</span>
-                          )}
-                        </div>
-                        {coupon.minPurchaseAmount && (
-                          <div>
-                            <span className="block text-xs text-gray-500">Mínimo</span>
-                            <span>R$ {coupon.minPurchaseAmount.toFixed(2)}</span>
-                          </div>
-                        )}
-                        {coupon.discountType === 'percentage' && coupon.maxDiscount && (
-                          <div>
-                            <span className="block text-xs text-gray-500">Desconto Máx.</span>
-                            <span>R$ {coupon.maxDiscount.toFixed(2)}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex gap-2 justify-end mt-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleEdit(coupon)}
-                          title="Editar"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => setDeleteConfirm(coupon)}
-                          title="Excluir"
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Delete Confirmation Dialog */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div 
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setDeleteConfirm(null)}
-          />
-          
-          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6 animate-in fade-in zoom-in duration-200">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">
-              Confirmar Exclusão
-            </h2>
-            <p className="text-sm text-gray-600 mb-6">
-              Tem certeza que deseja excluir o cupom "<strong>{deleteConfirm.code}</strong>"? 
-              Esta ação não pode ser desfeita.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => setDeleteConfirm(null)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700"
-              >
-                Excluir
-              </Button>
-            </div>
+        <CardHeader className="flex flex-row items-center justify-between pb-2 bg-gradient-to-r from-pink-50 via-purple-50 to-blue-50 rounded-t-lg">
+          <div>
+            <CardTitle className="text-lg font-bold text-pink-700">Cupons</CardTitle>
+            <CardDescription className="text-gray-600">Gerencie seus cupons promocionais</CardDescription>
           </div>
+          <div className="flex gap-2">
+            <Button onClick={loadCoupons} variant="outline" className="font-bold border-pink-300 hover:bg-pink-100 transition-all">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Atualizar
+            </Button>
+            <Button onClick={() => setShowForm(true)} className="bg-pink-600 hover:bg-pink-700 text-white font-bold shadow-md transition-all">
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Cupom
+            </Button>
+          </div>
+        </CardHeader>
+        <div className="w-full overflow-x-auto">
+          <table className="w-full rounded-lg shadow border border-pink-100">
+            <thead className="bg-pink-50">
+              <tr className="border-b">
+                <th className="text-left py-3 px-4 font-bold text-pink-700">Código</th>
+                <th className="text-left py-3 px-4 font-bold text-pink-700">Tipo</th>
+                <th className="text-left py-3 px-4 font-bold text-pink-700">Valor</th>
+                <th className="text-center py-3 px-4 font-bold text-pink-700">Usos</th>
+                <th className="text-center py-3 px-4 font-bold text-pink-700">Expiração</th>
+                <th className="text-center py-3 px-4 font-bold text-pink-700">Status</th>
+                <th className="text-center py-3 px-4 font-bold text-pink-700">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {coupons.map((coupon) => (
+                <tr key={coupon.id} className="border-b hover:bg-pink-50 transition-all">
+                      <td className="py-3 px-4 font-mono text-sm">{coupon.code}</td>
+                      <td className="py-3 px-4">
+                        {coupon.discountType === 'percentage' ? 'Porcentagem' : 'Valor Fixo'}
+                      </td>
+                      <td className="py-3 px-4">
+                        {coupon.discountType === 'percentage'
+                          ? `${coupon.discount}%${coupon.maxDiscount ? ` (Máx: R$ ${coupon.maxDiscount.toFixed(2)})` : ''}`
+                          : `R$ ${coupon.discount.toFixed(2)}`}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {coupon.usageCount}
+                        {coupon.usageLimit && (
+                          <span className="text-xs text-gray-500"> / {coupon.usageLimit}</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {new Date(coupon.expiryDate).toLocaleDateString('pt-BR')}
+                        {isExpired(coupon.expiryDate) && (
+                          <span className="block text-xs text-red-600">Expirado</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center align-middle">
+                        <span className={`inline-flex items-center justify-center gap-1 px-3 py-1 rounded text-xs font-medium whitespace-nowrap ${
+                          coupon.isActive && !isExpired(coupon.expiryDate)
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-gray-100 text-gray-800'
+                        }`} style={{ minWidth: 80 }}>
+                          {coupon.isActive && !isExpired(coupon.expiryDate) ? (
+                            <><CheckCircle2 className="h-3 w-3" /> Ativo</>
+                          ) : (
+                            <><XCircle className="h-3 w-3" /> Inativo</>
+                          )}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEdit(coupon)}
+                            title="Editar"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setDeleteConfirm(coupon)}
+                            title="Excluir"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <div className="w-full overflow-x-auto">
+                              <table className="w-full rounded-lg shadow border border-pink-100">
+                                <thead className="bg-pink-50">
+                                  <tr className="border-b">
+                                    <th className="text-left py-3 px-4 font-bold text-pink-700">Código</th>
+                                    <th className="text-left py-3 px-4 font-bold text-pink-700">Tipo</th>
+                                    <th className="text-left py-3 px-4 font-bold text-pink-700">Valor</th>
+                                    <th className="text-center py-3 px-4 font-bold text-pink-700">Usos</th>
+                                    <th className="text-center py-3 px-4 font-bold text-pink-700">Expiração</th>
+                                    <th className="text-center py-3 px-4 font-bold text-pink-700">Status</th>
+                                    <th className="text-center py-3 px-4 font-bold text-pink-700">Ações</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {coupons.map((coupon) => (
+                                    <tr key={coupon.id} className="border-b hover:bg-pink-50 transition-all">
+                                      <td className="py-3 px-4 font-mono text-sm">{coupon.code}</td>
+                                      <td className="py-3 px-4">
+                                        {coupon.discountType === 'percentage' ? 'Porcentagem' : 'Valor Fixo'}
+                                      </td>
+                                      <td className="py-3 px-4">
+                                        {coupon.discountType === 'percentage'
+                                          ? `${coupon.discount}%${coupon.maxDiscount ? ` (Máx: R$ ${coupon.maxDiscount.toFixed(2)})` : ''}`
+                                          : `R$ ${coupon.discount.toFixed(2)}`}
+                                      </td>
+                                      <td className="py-3 px-4 text-center">
+                                        {coupon.usageCount}
+                                        {coupon.usageLimit && (
+                                          <span className="text-xs text-gray-500"> / {coupon.usageLimit}</span>
+                                        )}
+                                      </td>
+                                      <td className="py-3 px-4 text-center">
+                                        {new Date(coupon.expiryDate).toLocaleDateString('pt-BR')}
+                                        {isExpired(coupon.expiryDate) && (
+                                          <span className="block text-xs text-red-600">Expirado</span>
+                                        )}
+                                      </td>
+                                      <td className="py-3 px-4 text-center align-middle">
+                                        <span className={`inline-flex items-center justify-center gap-1 px-3 py-1 rounded text-xs font-medium whitespace-nowrap ${
+                                          coupon.isActive && !isExpired(coupon.expiryDate)
+                                            ? 'bg-green-100 text-green-800'
+                                            : 'bg-gray-100 text-gray-800'
+                                        }`} style={{ minWidth: 80 }}>
+                                          {coupon.isActive && !isExpired(coupon.expiryDate) ? (
+                                            <><CheckCircle2 className="h-3 w-3" /> Ativo</>
+                                          ) : (
+                                            <><XCircle className="h-3 w-3" /> Inativo</>
+                                          )}
+                                        </span>
+                                      </td>
+                                      <td className="py-3 px-4 text-center">
+                                        <div className="flex items-center justify-center gap-2">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleEdit(coupon)}
+                                            title="Editar"
+                                            className="hover:bg-pink-100"
+                                          >
+                                            <Edit className="h-4 w-4" />
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => setDeleteConfirm(coupon)}
+                                            title="Excluir"
+                                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                          >
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

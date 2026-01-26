@@ -301,67 +301,14 @@ export function AdminPanel({}: AdminPanelProps) {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="bg-gradient-to-r from-pink-100 via-purple-100 to-blue-100 border-b shadow-sm">
+        <div className="container mx-auto px-4 py-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Coral Fit Admin</h1>
-            <p className="text-sm text-gray-600">Sistema de Gerenciamento de Produtos</p>
+            <h1 className="text-3xl font-extrabold text-purple-800 tracking-tight drop-shadow">Coral Fit <span className="text-pink-600">Admin</span></h1>
+            <p className="text-base text-gray-700 mt-1 font-medium">Sistema de Gerenciamento de Produtos e Cupons</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button 
-              variant="default" 
-              onClick={handleDownloadProductsJSON} 
-              className="gap-2 bg-green-600 hover:bg-green-700"
-              title="Baixar products.json para copiar para public/"
-            >
-              <Save className="h-4 w-4" />
-              Gerar products.json
-            </Button>
-            <Button variant="outline" onClick={handleExportJSON} className="gap-2">
-              <Download className="h-4 w-4" />
-              Backup JSON
-            </Button>
-            <Button variant="outline" className="gap-2" asChild>
-              <label htmlFor="import-json" className="cursor-pointer">
-                <Upload className="h-4 w-4" />
-                Importar JSON
-                <input
-                  id="import-json"
-                  type="file"
-                  accept=".json"
-                  onChange={handleImportJSON}
-                  className="hidden"
-                />
-              </label>
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => {
-              const data = localStorage.getItem('coral_fit_products');
-              console.log('=== DEBUG LOCALSTORAGE ===');
-              console.log('Chave:', 'coral_fit_products');
-              console.log('Dados brutos:', data);
-              console.log('Tamanho:', data ? (data.length / 1024).toFixed(2) + ' KB' : '0 KB');
-              if (data) {
-                try {
-                  const parsed = JSON.parse(data);
-                  console.log('Produtos parseados:', parsed.length);
-                  console.table(parsed.map((p: any) => ({ 
-                    id: p.id, 
-                    code: p.code, 
-                    name: p.name, 
-                    price: p.price,
-                    images: p.images?.length || 0
-                  })));
-                } catch (e) {
-                  console.error('Erro ao parsear JSON:', e);
-                }
-              } else {
-                console.log('LocalStorage vazio!');
-              }
-              alert('Verifique o console do navegador (F12) para ver os dados');
-            }}>
-              🐛 Debug
-            </Button>
-            <Button variant="outline" onClick={handleLogout} className="gap-2">
+            <Button variant="destructive" onClick={handleLogout} className="gap-2 font-bold shadow-md">
               <LogOut className="h-4 w-4" />
               Sair
             </Button>
@@ -371,54 +318,86 @@ export function AdminPanel({}: AdminPanelProps) {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Info Banner */}
-        <Alert className="mb-6 bg-blue-50 border-blue-200">
+        {/* Info Banner dinâmico por aba */}
+        <Alert className="mb-6 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 border-blue-200 shadow">
           <AlertDescription className="text-sm">
-            <strong>💡 Fluxo de Trabalho:</strong> 
-            <span className="ml-2">
-              1. Cadastre produtos aqui (salvos no navegador) 
-              → 2. Clique em <strong>"Gerar products.json"</strong> 
-              → 3. Copie o arquivo baixado para <code className="bg-blue-100 px-1 rounded">public/products.json</code> 
-              → 4. Execute <code className="bg-blue-100 px-1 rounded">npm run deploy</code> 
-              → 5. Site atualiza com os produtos! 🚀
-            </span>
+            <strong className="text-purple-700 text-lg">💡 Fluxo de Trabalho:</strong>
+            {activeTab === 'products' ? (
+              <span className="ml-2">
+                1. Cadastre ou edite produtos normalmente.<br />
+                2. Clique em <strong>"Gerar products.json"</strong> para baixar o arquivo.<br />
+                3. Substitua o arquivo em <code className="bg-blue-100 px-1 rounded">public/products.json</code>.<br />
+                4. Execute <code className="bg-blue-100 px-1 rounded">npm run deploy</code> para publicar.<br />
+                5. Pronto! O site será atualizado com os novos produtos 🚀
+              </span>
+            ) : (
+              <span className="ml-2">
+                1. Cadastre, edite ou exclua cupons conforme necessário.<br />
+                2. Clique em <strong>"Gerar coupons.json"</strong> para baixar o arquivo.<br />
+                3. Substitua o arquivo em <code className="bg-blue-100 px-1 rounded">public/coupons.json</code>.<br />
+                4. Execute <code className="bg-blue-100 px-1 rounded">npm run deploy</code> para publicar.<br />
+                5. Pronto! O site será atualizado com os novos cupons 🎟️
+              </span>
+            )}
           </AlertDescription>
         </Alert>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'products' | 'coupons')} className="space-y-6">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="products" className="gap-2">
-              <Package className="h-4 w-4" />
-              Produtos
-            </TabsTrigger>
-            <TabsTrigger value="coupons" className="gap-2">
-              <Tag className="h-4 w-4" />
-              Cupons
-            </TabsTrigger>
-          </TabsList>
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'products' | 'coupons')} className="space-y-6">
+            <TabsList className="grid w-full max-w-md grid-cols-2 bg-white/80 rounded-lg shadow border mb-2">
+              <TabsTrigger value="products" className="gap-2 text-blue-700 data-[state=active]:bg-blue-100 data-[state=active]:font-bold">
+                <Package className="h-4 w-4" />
+                Produtos
+              </TabsTrigger>
+              <TabsTrigger value="coupons" className="gap-2 text-pink-700 data-[state=active]:bg-pink-100 data-[state=active]:font-bold">
+                <Tag className="h-4 w-4" />
+                Cupons
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Products Tab */}
-          <TabsContent value="products" className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Total de Produtos
-              </CardTitle>
-              <Package className="h-4 w-4 text-gray-600" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalProducts}</div>
-              <p className="text-xs text-gray-500 mt-1">Produtos cadastrados</p>
-            </CardContent>
-          </Card>
+            {/* Botão único para baixar JSON conforme a aba */}
+            <div className="flex items-center gap-4 mb-6">
+              <Button
+                variant="default"
+                size="lg"
+                onClick={() => {
+                  if (activeTab === 'products') {
+                    downloadProductsJSON();
+                    showToast('✓ products.json baixado! Copie para public/products.json no projeto.', 'success');
+                  } else {
+                    downloadCouponsJSON();
+                    showToast('✓ coupons.json baixado! Copie para public/coupons.json no projeto.', 'success');
+                  }
+                }}
+                className={`gap-2 font-bold shadow-lg transition-all duration-200 ${activeTab === 'products' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-pink-600 hover:bg-pink-700'}`}
+                title={activeTab === 'products' ? 'Baixar products.json para copiar para public/' : 'Baixar coupons.json para copiar para public/'}
+              >
+                <Save className="h-5 w-5" />
+                {activeTab === 'products' ? 'Gerar products.json' : 'Gerar coupons.json'}
+              </Button>
+            </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                Estoque Total
+            {/* Products Tab */}
+            <TabsContent value="products" className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="shadow-lg border-blue-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Total de Produtos
+                </CardTitle>
+                <Package className="h-4 w-4 text-gray-600" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalProducts}</div>
+                <p className="text-xs text-gray-500 mt-1">Produtos cadastrados</p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-lg border-blue-200">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">
+                  Estoque Total
               </CardTitle>
               <Box className="h-4 w-4 text-gray-600" />
             </CardHeader>
@@ -428,7 +407,7 @@ export function AdminPanel({}: AdminPanelProps) {
             </CardContent>
           </Card>
 
-          <Card>
+            <Card className="shadow-lg border-blue-200">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
                 Categorias
@@ -441,7 +420,7 @@ export function AdminPanel({}: AdminPanelProps) {
             </CardContent>
           </Card>
 
-          <Card>
+            <Card className="shadow-lg border-blue-200">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-600">
                 Preço Médio
@@ -458,7 +437,7 @@ export function AdminPanel({}: AdminPanelProps) {
         </div>
 
         {/* Products List */}
-        <Card>
+        <Card className="shadow-lg border-pink-200">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -588,22 +567,6 @@ export function AdminPanel({}: AdminPanelProps) {
 
           {/* Coupons Tab */}
           <TabsContent value="coupons">
-            <div className="flex items-center gap-2 mb-4">
-              <Button 
-                variant="default" 
-                onClick={() => {
-                  downloadCouponsJSON();
-                  if (typeof window !== 'undefined' && window?.showToast) {
-                    window.showToast('✓ coupons.json baixado! Copie para public/coupons.json no projeto.', 'success');
-                  }
-                }}
-                className="gap-2 bg-green-600 hover:bg-green-700"
-                title="Baixar coupons.json para copiar para public/"
-              >
-                <Save className="h-4 w-4" />
-                Gerar coupons.json
-              </Button>
-            </div>
             <CouponManager />
           </TabsContent>
         </Tabs>
