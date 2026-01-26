@@ -182,7 +182,7 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
     message += `*Subtotal Produtos: R$ ${subtotal.toFixed(2).replace('.', ',')}*\n`;
     
     if (formData.deliveryType === 'delivery' && shippingInfo) {
-      message += `*Frete (${shippingInfo.distance.toFixed(1)} km): R$ ${shippingInfo.price.toFixed(2).replace('.', ',')}*\n`;
+      message += `*Frete: R$ ${shippingInfo.price.toFixed(2).replace('.', ',')}*\n`;
     }
     
     if (appliedCoupon && couponDiscount > 0) {
