@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Product, Color } from '../types';
+import { Product, Color, VariantImage } from '../types';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -26,6 +26,8 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   const [colors, setColors] = useState<Color[]>(product?.colors || []);
   const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
   const [tags, setTags] = useState<string[]>(product?.tags || []);
+  // Estado para imagens por variação
+  const [variantImages, setVariantImages] = useState<VariantImage[]>(product?.variantImages || []);
   
   const [newImageUrl, setNewImageUrl] = useState('');
   const [newColorName, setNewColorName] = useState('');
@@ -78,6 +80,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
       sizes,
       tags,
       stock: product?.stock || [], // Manter estoque existente ou array vazio
+      variantImages,
     };
 
     onSave(productData);
@@ -331,41 +334,44 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
             </div>
           )}
 
+
           {images.length > 0 && (
             <div>
               <Label className="block mb-2">
-                Imagens adicionadas ({images.length})
+                Selecione as imagens do produto ({images.length})
               </Label>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-2">
                 {images.map((img, index) => (
-                  <div key={index} className="relative group">
+                  <label key={index} className="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={true}
+                      onChange={e => {
+                        if (!e.target.checked) {
+                          // Remove imagem da lista
+                          setImages(prev => prev.filter((_, i) => i !== index));
+                        }
+                      }}
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                    />
                     <img
                       src={img}
                       alt={`Produto ${index + 1}`}
-                      className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                      className="w-16 h-16 object-cover rounded border"
                       onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ESem imagem%3C/text%3E%3C/svg%3E';
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\"%3E%3Crect fill=\"%23ddd\" width=\"200\" height=\"200\"/%3E%3Ctext fill=\"%23999\" x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\"%3ESem imagem%3C/text%3E%3C/svg%3E';
                       }}
                     />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="sm"
-                      className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => removeImage(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
                     {index === 0 && (
-                      <span className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-medium">
+                      <span className="ml-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-medium">
                         Principal
                       </span>
                     )}
-                  </div>
+                  </label>
                 ))}
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                💡 Dica: A primeira imagem será usada como imagem principal do produto
+                💡 Dica: A primeira imagem marcada será usada como imagem principal do produto
               </p>
             </div>
           )}
@@ -471,6 +477,77 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+
+      {/* Imagens por Variação */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Imagens por Variação</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm text-gray-600">Associe imagens específicas para cada combinação de cor e tamanho.</p>
+            {(colors.length > 0 && sizes.length > 0) ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {colors.map((color) => (
+                  sizes.map((size) => {
+                    const key = `${color.name}-${size}`;
+                    const existing = variantImages.find(v => v.color === color.name && v.size === size);
+                    return (
+                      <div key={key} className="border rounded-lg p-3">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="w-5 h-5 rounded" style={{ backgroundColor: color.hex }} />
+                          <span className="font-medium">{color.name}</span>
+                          <span className="text-xs text-gray-500">{size}</span>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Selecione as imagens para essa variação</Label>
+                          <div className="space-y-2">
+                            {images.length === 0 && (
+                              <span className="text-xs text-gray-400">Cadastre imagens do produto primeiro</span>
+                            )}
+                            {images.map((img, idx) => {
+                              const checked = !!(existing && existing.images.includes(img));
+                              return (
+                                <label key={idx} className="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={e => {
+                                      setVariantImages(prev => {
+                                        const filtered = prev.filter(v => !(v.color === color.name && v.size === size));
+                                        let newImages = existing?.images ? [...existing.images] : [];
+                                        if (e.target.checked) {
+                                          if (!newImages.includes(img)) newImages.push(img);
+                                        } else {
+                                          newImages = newImages.filter(i => i !== img);
+                                        }
+                                        return [...filtered, { color: color.name, size, images: newImages }];
+                                      });
+                                    }}
+                                    className="form-checkbox h-5 w-5 text-blue-600"
+                                  />
+                                  <img
+                                    src={img}
+                                    alt="Variante"
+                                    className="w-16 h-16 object-cover rounded border"
+                                  />
+                                </label>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500">Adicione cores e tamanhos para habilitar imagens por variação.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

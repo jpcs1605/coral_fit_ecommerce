@@ -6,6 +6,11 @@ export interface Product {
   pricePaid?: number; // Valor pago (histórico)
   image: string; // Imagem principal (mantida para compatibilidade)
   images: string[]; // Múltiplas imagens
+  /**
+   * Imagens específicas para variações (cor e/ou tamanho).
+   * Se não houver para a variação, usar images geral.
+   */
+  variantImages?: VariantImage[];
   category: string;
   colors: Color[];
   sizes: string[];
@@ -14,6 +19,12 @@ export interface Product {
   stock: StockItem[]; // Estoque por cor e tamanho
   createdAt: string;
   updatedAt: string;
+}
+
+export interface VariantImage {
+  color?: string; // Nome da cor (ex: "Vermelho")
+  size?: string;  // Tamanho (ex: "G")
+  images: string[]; // URLs das imagens para essa variação
 }
 
 export interface Color {

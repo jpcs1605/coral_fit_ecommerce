@@ -1,3 +1,23 @@
+import { Product } from '../types';
+
+/**
+ * Retorna a imagem correta do produto conforme cor e tamanho selecionados.
+ * Se não houver imagem para a variação, retorna a imagem principal.
+ */
+export function getProductImage(product: Product, color?: string, size?: string): string {
+  // Busca imagem para cor+tamanho
+  const variant = product.variantImages?.find(
+    v => v.color === color && v.size === size && v.images.length > 0
+  );
+  if (variant) return variant.images[0];
+  // Busca imagem só para cor
+  const colorVariant = product.variantImages?.find(
+    v => v.color === color && !v.size && v.images.length > 0
+  );
+  if (colorVariant) return colorVariant.images[0];
+  // Usa imagem principal
+  return product.image || product.images?.[0] || '';
+}
 /**
  * Redimensiona e comprime uma imagem para otimizar o armazenamento
  * @param file - Arquivo de imagem original

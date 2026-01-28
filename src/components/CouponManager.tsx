@@ -274,71 +274,109 @@ export function CouponManager() {
 
       {/* ================= List ================= */}
       <Card>
-        <CardHeader className="flex justify-between flex-row">
-          <div>
-            <CardTitle>Cupons</CardTitle>
-            <CardDescription>Gerencie os cupons</CardDescription>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setCoupons(loadCoupons())}
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Atualizar
-            </Button>
-            <Button onClick={() => setShowForm(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Novo
-            </Button>
-          </div>
-        </CardHeader>
+        
 
         <CardContent>
-          <table className="w-full border">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Valor</th>
-                <th>Status</th>
-                <th>Ações</th>
-              </tr>
-            </thead>
-            <tbody>
-              {coupons.map((coupon) => (
-                <tr key={coupon.id}>
-                  <td>{coupon.code}</td>
-                  <td>
-                    {coupon.discountType === 'percentage'
-                      ? `${coupon.discount}%`
-                      : `R$ ${coupon.discount.toFixed(2)}`}
-                  </td>
-                  <td>
-                    {coupon.isActive && !isExpired(coupon.expiryDate)
-                      ? 'Ativo'
-                      : 'Inativo'}
-                  </td>
-                  <td className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleEdit(coupon)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-red-600"
-                      onClick={() => deleteCoupon(coupon.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </td>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <CardTitle className="text-lg font-bold">Cupons</CardTitle>
+              <CardDescription className="text-gray-600">Gerencie seus cupons promocionais</CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={() => setCoupons(loadCoupons())} variant="outline" className="font-bold border-pink-300 hover:bg-pink-100 transition-all">
+                <RefreshCw className="h-4 w-4 mr-2" /> Atualizar
+              </Button>
+              <Button
+                onClick={() => setShowForm(true)}
+                className="border border-gray-300 bg-white hover:bg-gray-50 text-black font-bold shadow-md transition-all"
+              >
+                <Plus className="h-4 w-4 mr-2" /> Novo Cupom
+              </Button>
+            </div>
+          </div>
+          <div className="w-full overflow-x-auto">
+            <table className="w-full rounded-lg border-collapse bg-white text-sm">
+              <thead className="bg-pink-50 border-b border-pink-100">
+                <tr>
+                  <th className="text-left py-2 px-3 font-semibold text-pink-700">Código</th>
+                  <th className="text-left py-2 px-3 font-semibold text-pink-700">Tipo</th>
+                  <th className="text-left py-2 px-3 font-semibold text-pink-700">Valor</th>
+                  <th className="text-center py-2 px-3 font-semibold text-pink-700">Validade</th>
+                  <th className="text-center py-2 px-3 font-semibold text-pink-700">Status</th>
+                  <th className="text-center py-2 px-3 font-semibold text-pink-700">Usos</th>
+                  <th className="text-center py-2 px-3 font-semibold text-pink-700">Ações</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {coupons.map((coupon) => (
+                  <tr key={coupon.id} className="border-b border-pink-50 hover:bg-pink-50/60 transition-colors">
+                    <td className="py-2 px-3 font-mono text-[15px] text-gray-800 align-middle">{coupon.code}</td>
+                    <td className="py-2 px-3 align-middle text-gray-700">
+                      {coupon.discountType === 'percentage' ? 'Porcentagem' : 'Valor Fixo'}
+                    </td>
+                    <td className="py-2 px-3 align-middle text-gray-700">
+                      {coupon.discountType === 'percentage'
+                        ? `${coupon.discount}%${coupon.maxDiscount ? ` (Máx: R$ ${coupon.maxDiscount.toFixed(2)})` : ''}`
+                        : `R$ ${coupon.discount.toFixed(2)}`}
+                    </td>
+                    <td className="py-2 px-3 text-center align-middle text-gray-700">
+                      <span>{new Date(coupon.expiryDate).toLocaleDateString('pt-BR')}</span>
+                      {isExpired(coupon.expiryDate) && (
+                        <span className="ml-2 text-xs font-semibold text-red-500 align-middle">Expirado</span>
+                      )}
+                    </td>
+                    <td className="py-2 px-3 text-center align-middle">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap border select-none ${
+                          coupon.isActive && !isExpired(coupon.expiryDate)
+                            ? 'bg-green-50 text-green-700 border-green-200'
+                            : 'bg-gray-50 text-gray-500 border-gray-200'
+                        }`}
+                        style={{ minWidth: 70 }}
+                      >
+                        <span className="flex items-center justify-center mr-1">
+                          {coupon.isActive && !isExpired(coupon.expiryDate) ? (
+                            <CheckCircle2 className="h-4 w-4" strokeWidth={2} />
+                          ) : (
+                            <XCircle className="h-4 w-4" strokeWidth={2} />
+                          )}
+                        </span>
+                        {coupon.isActive && !isExpired(coupon.expiryDate) ? 'Ativo' : 'Inativo'}
+                      </span>
+                    </td>
+                    <td className="py-2 px-3 text-center align-middle text-gray-700">
+                      <span className="inline-block min-w-[24px]">{coupon.usageCount}</span>
+                      {coupon.usageLimit && (
+                        <span className="text-xs text-gray-400"> / {coupon.usageLimit}</span>
+                      )}
+                    </td>
+                    <td className="py-2 px-3 text-center align-middle">
+                      <div className="flex items-center justify-center gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => handleEdit(coupon)}
+                          title="Editar"
+                          className="p-1"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setDeleteConfirm(coupon)}
+                          title="Excluir"
+                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>
