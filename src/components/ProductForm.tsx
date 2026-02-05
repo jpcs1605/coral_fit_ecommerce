@@ -15,7 +15,6 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
-
 export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   const [code, setCode] = useState(product?.code || '');
   const [name, setName] = useState(product?.name || '');
@@ -23,16 +22,13 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
   const [description, setDescription] = useState(product?.description || '');
   const [price, setPrice] = useState(product?.price?.toString() || '');
   const [pricePaid, setPricePaid] = useState(product?.pricePaid?.toString() || '');
-  // Banco de imagens disponíveis (todas já enviadas)
-  const [allImages, setAllImages] = useState<string[]>(product?.images || []);
-  // Imagens selecionadas para o produto
-  const [selectedImages, setSelectedImages] = useState<string[]>(product?.images || []);
+  const [images, setImages] = useState<string[]>(product?.images || []);
   const [colors, setColors] = useState<Color[]>(product?.colors || []);
   const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
   const [tags, setTags] = useState<string[]>(product?.tags || []);
   // Estado para imagens por variação
   const [variantImages, setVariantImages] = useState<VariantImage[]>(product?.variantImages || []);
-
+  
   const [newImageUrl, setNewImageUrl] = useState('');
   const [newColorName, setNewColorName] = useState('');
   const [newColorHex, setNewColorHex] = useState('#000000');
@@ -78,8 +74,8 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
       description: description.trim(),
       price: parseFloat(price),
       pricePaid: pricePaid ? parseFloat(pricePaid) : undefined,
-      images: selectedImages,
-      image: selectedImages[0] || '', // Primeira imagem como principal
+      images,
+      image: images[0] || '', // Primeira imagem como principal
       colors,
       sizes,
       tags,
@@ -90,36 +86,33 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
     onSave(productData);
   };
 
-
   const addImage = () => {
     if (newImageUrl.trim()) {
-      setAllImages(prev => [...prev, newImageUrl.trim()]);
-      setSelectedImages(prev => [...prev, newImageUrl.trim()]);
+      setImages([...images, newImageUrl.trim()]);
       setNewImageUrl('');
     }
   };
 
-
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar arquivo
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setError(validation.error || 'Arquivo inválido');
+      return;
+    }
 
     setUploadingImage(true);
     setError('');
 
     try {
-      const newImgs: string[] = [];
-      for (const file of files) {
-        const validation = validateImageFile(file);
-        if (!validation.valid) {
-          setError(validation.error || 'Arquivo inválido');
-          continue;
-        }
-        const base64 = await compressImage(file);
-        newImgs.push(base64);
-      }
-      setAllImages(prev => [...prev, ...newImgs]);
-      setSelectedImages(prev => [...prev, ...newImgs]);
+      // Comprimir e converter para base64
+      const base64 = await compressImage(file);
+      setImages([...images, base64]);
+      
+      // Resetar input para permitir upload do mesmo arquivo novamente
       e.target.value = '';
     } catch (err) {
       setError('Erro ao processar imagem: ' + (err as Error).message);
@@ -341,48 +334,41 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
             </div>
           )}
 
-
-          {allImages.length > 0 && (
+          {images.length > 0 && (
             <div>
               <Label className="block mb-2">
-                Selecione as imagens do produto ({allImages.length})
+                Imagens adicionadas ({images.length})
               </Label>
-              <div className="space-y-2">
-                {allImages.map((img, index) => {
-                  const checked = selectedImages.includes(img);
-                  return (
-                    <label key={index} className="flex items-center gap-3 p-2 border rounded hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={e => {
-                          if (e.target.checked) {
-                            setSelectedImages(prev => [...prev, img]);
-                          } else {
-                            setSelectedImages(prev => prev.filter(i => i !== img));
-                          }
-                        }}
-                        className="form-checkbox h-5 w-5 text-blue-600"
-                      />
-                      <img
-                        src={img}
-                        alt={`Produto ${index + 1}`}
-                        className="w-16 h-16 object-cover rounded border"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"200\" height=\"200\"%3E%3Crect fill=\"%23ddd\" width=\"200\" height=\"200\"/%3E%3Ctext fill=\"%23999\" x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\"%3ESem imagem%3C/text%3E%3C/svg%3E';
-                        }}
-                      />
-                      {selectedImages[0] === img && (
-                        <span className="ml-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-medium">
-                          Principal
-                        </span>
-                      )}
-                    </label>
-                  );
-                })}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {images.map((img, index) => (
+                  <div key={index} className="relative group">
+                    <img
+                      src={img}
+                      alt={`Produto ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ESem imagem%3C/text%3E%3C/svg%3E';
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="sm"
+                      className="absolute top-2 right-2 h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeImage(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                    {index === 0 && (
+                      <span className="absolute bottom-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded font-medium">
+                        Principal
+                      </span>
+                    )}
+                  </div>
+                ))}
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                💡 Dica: A primeira imagem marcada será usada como imagem principal do produto
+                💡 Dica: A primeira imagem será usada como imagem principal do produto
               </p>
             </div>
           )}
