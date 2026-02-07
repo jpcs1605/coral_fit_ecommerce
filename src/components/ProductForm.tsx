@@ -86,9 +86,24 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
     onSave(productData);
   };
 
+
+  // Converte link do Google Drive para formato direto
+  function convertGoogleDriveUrl(url: string): string {
+    // Formatos aceitos:
+    // https://drive.google.com/file/d/ID/view?usp=sharing
+    // https://drive.google.com/open?id=ID
+    // https://drive.google.com/uc?export=view&id=ID
+    const fileIdMatch = url.match(/(?:file\/d\/|open\?id=|uc\?export=view&id=)([\w-]{10,})/);
+    if (fileIdMatch && fileIdMatch[1]) {
+      return `https://drive.google.com/uc?export=view&id=${fileIdMatch[1]}`;
+    }
+    return url;
+  }
+
   const addImage = () => {
     if (newImageUrl.trim()) {
-      setImages([...images, newImageUrl.trim()]);
+      const url = convertGoogleDriveUrl(newImageUrl.trim());
+      setImages([...images, url]);
       setNewImageUrl('');
     }
   };
@@ -347,6 +362,7 @@ export function ProductForm({ product, onSave, onCancel }: ProductFormProps) {
                       alt={`Produto ${index + 1}`}
                       className="w-full h-32 object-cover rounded-lg border-2 border-gray-200"
                       onError={(e) => {
+                        console.error('[ProductForm] Erro ao carregar imagem:', img);
                         (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="200"%3E%3Crect fill="%23ddd" width="200" height="200"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3ESem imagem%3C/text%3E%3C/svg%3E';
                       }}
                     />
