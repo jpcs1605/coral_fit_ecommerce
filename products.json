@@ -362,5 +362,189 @@
     "id": "mlckmn8lyzbe1w91i6",
     "createdAt": "2026-02-07T17:11:22.149Z",
     "updatedAt": "2026-02-07T17:11:22.149Z"
+  },
+  {
+    "code": "CORAL-5",
+    "name": "Biquíni Cecília",
+    "category": "Praia",
+    "description": "Veste do 34 ao 38",
+    "price": 40,
+    "pricePaid": 17,
+    "images": [
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-15_at_15.26.57_qpj0fr.jpg",
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-15_at_15.26.57_1_gzeriy.jpg",
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482706/WhatsApp_Image_2025-08-15_at_15.27.14_haq5sj.jpg",
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-15_at_15.27.15_ldba7z.jpg"
+    ],
+    "image": "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-15_at_15.26.57_qpj0fr.jpg",
+    "colors": [
+      {
+        "name": "Azul Royal",
+        "hex": "#130d82"
+      },
+      {
+        "name": "Preto",
+        "hex": "#000000"
+      }
+    ],
+    "sizes": [
+      "P"
+    ],
+    "tags": [],
+    "stock": [
+      {
+        "color": "Azul Royal",
+        "size": "P",
+        "quantity": 0
+      },
+      {
+        "color": "Preto",
+        "size": "P",
+        "quantity": 0
+      }
+    ],
+    "variantImages": [
+      {
+        "color": "Azul Royal",
+        "size": "P",
+        "images": [
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-15_at_15.26.57_qpj0fr.jpg",
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-15_at_15.26.57_1_gzeriy.jpg"
+        ]
+      },
+      {
+        "color": "Preto",
+        "size": "P",
+        "images": [
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482706/WhatsApp_Image_2025-08-15_at_15.27.14_haq5sj.jpg",
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-15_at_15.27.15_ldba7z.jpg"
+        ]
+      }
+    ],
+    "id": "mlcxala18o59ongc77p",
+    "createdAt": "2026-02-07T23:05:54.745Z",
+    "updatedAt": "2026-02-07T23:05:54.745Z"
+  },
+  {
+    "code": "CORAL-6",
+    "name": "Biquíni Geovana",
+    "category": "Praia",
+    "description": "Veste do 38 ao 42",
+    "price": 60,
+    "pricePaid": 25,
+    "images": [
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-20_at_12.48.20_krsbnj.jpg",
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482706/WhatsApp_Image_2025-08-20_at_12.48.22_1_mb5bd9.jpg",
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482706/WhatsApp_Image_2025-08-20_at_12.48.22_2_z3sli0.jpg"
+    ],
+    "image": "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-20_at_12.48.20_krsbnj.jpg",
+    "colors": [
+      {
+        "name": "Azul Royal",
+        "hex": "#200fa3"
+      },
+      {
+        "name": "Vermelho",
+        "hex": "#d21531"
+      }
+    ],
+    "sizes": [
+      "M"
+    ],
+    "tags": [],
+    "stock": [
+      {
+        "color": "Azul Royal",
+        "size": "M",
+        "quantity": 0
+      },
+      {
+        "color": "Vermelho",
+        "size": "M",
+        "quantity": 0
+      }
+    ],
+    "variantImages": [
+      {
+        "color": "Azul Royal",
+        "size": "M",
+        "images": [
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482707/WhatsApp_Image_2025-08-20_at_12.48.20_krsbnj.jpg"
+        ]
+      },
+      {
+        "color": "Vermelho",
+        "size": "M",
+        "images": [
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482706/WhatsApp_Image_2025-08-20_at_12.48.22_1_mb5bd9.jpg",
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482706/WhatsApp_Image_2025-08-20_at_12.48.22_2_z3sli0.jpg"
+        ]
+      }
+    ],
+    "id": "mlcxeip806opel8bi5ne",
+    "createdAt": "2026-02-07T23:08:58.028Z",
+    "updatedAt": "2026-02-07T23:08:58.028Z"
+  },
+  {
+    "code": "CORAL-7",
+    "name": "Biquíni Assa Delta",
+    "category": "Praia",
+    "description": "Veste do 38 ao 42",
+    "price": 60,
+    "pricePaid": 35,
+    "images": [
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.37_wnujxa.jpg",
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.38_jkr9p0.jpg",
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.45_2_rcooof.jpg",
+      "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.43_2_xiwm7l.jpg"
+    ],
+    "image": "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.37_wnujxa.jpg",
+    "colors": [
+      {
+        "name": "Vermelho",
+        "hex": "#da2110"
+      },
+      {
+        "name": "Fuscia",
+        "hex": "#9b2383"
+      }
+    ],
+    "sizes": [
+      "M"
+    ],
+    "tags": [],
+    "stock": [
+      {
+        "color": "Vermelho",
+        "size": "M",
+        "quantity": 0
+      },
+      {
+        "color": "Fuscia",
+        "size": "M",
+        "quantity": 0
+      }
+    ],
+    "variantImages": [
+      {
+        "color": "Vermelho",
+        "size": "M",
+        "images": [
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.37_wnujxa.jpg",
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.38_jkr9p0.jpg"
+        ]
+      },
+      {
+        "color": "Fuscia",
+        "size": "M",
+        "images": [
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.45_2_rcooof.jpg",
+          "https://res.cloudinary.com/dr0lz68su/image/upload/v1770482712/WhatsApp_Image_2025-08-16_at_12.18.43_2_xiwm7l.jpg"
+        ]
+      }
+    ],
+    "id": "mlcxhnlwetqvo73xpxq",
+    "createdAt": "2026-02-07T23:11:24.356Z",
+    "updatedAt": "2026-02-07T23:11:24.356Z"
   }
 ]
