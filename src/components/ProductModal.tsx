@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Check } from 'lucide-react';
 import { Product } from '../types';
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from './ui/carousel';
 
 interface ProductModalProps {
   product: Product;
@@ -63,12 +64,51 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 p-6">
-          <div className="rounded-2xl overflow-hidden">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+          <div className="flex items-center justify-center min-h-[360px] bg-white rounded-2xl shadow-md p-0 w-full max-w-[440px] mx-auto">
+            {/* Seleciona imagens da variação, se houver, senão usa images gerais */}
+            {(() => {
+              let images: string[] = [];
+              if (product.variantImages) {
+                const found = product.variantImages.find(
+                  v => v.color === selectedColor && v.size === selectedSize
+                );
+                if (found && found.images.length > 0) {
+                  images = found.images;
+                }
+              }
+              if (images.length === 0) {
+                images = product.images && product.images.length > 0 ? product.images : [product.image];
+              }
+              if (images.length === 1) {
+                return (
+                  <img
+                    src={images[0]}
+                    alt={product.name + ' ' + selectedColor + ' ' + selectedSize}
+                    className="w-full h-[360px] object-contain rounded-2xl bg-white"
+                    style={{ maxWidth: 420, maxHeight: 420 }}
+                  />
+                );
+              }
+              // Carrossel: apenas uma imagem por vez, centralizada
+              return (
+                <Carousel className="w-full max-w-[420px] relative">
+                  <CarouselContent className="!ml-0">
+                    {images.map((img, idx) => (
+                      <CarouselItem key={idx} className="flex items-center justify-center !basis-full !pl-0">
+                        <img
+                          src={img}
+                          alt={product.name + ' ' + selectedColor + ' ' + selectedSize}
+                          className="w-full h-[360px] object-contain rounded-2xl bg-white"
+                          style={{ maxWidth: 420, maxHeight: 420 }}
+                        />
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                  {images.length > 1 && <CarouselPrevious />}
+                  {images.length > 1 && <CarouselNext />}
+                </Carousel>
+              );
+            })()}
           </div>
 
           <div className="flex flex-col">
