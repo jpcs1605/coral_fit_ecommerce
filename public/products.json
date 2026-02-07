@@ -333,12 +333,12 @@
       {
         "color": "Preto",
         "size": "P/M",
-        "quantity": 0
+        "quantity": 1
       },
       {
         "color": "Vinho",
         "size": "P/M",
-        "quantity": 0
+        "quantity": 1
       }
     ],
     "variantImages": [
@@ -395,12 +395,12 @@
       {
         "color": "Azul Royal",
         "size": "P",
-        "quantity": 0
+        "quantity": 1
       },
       {
         "color": "Preto",
         "size": "P",
-        "quantity": 0
+        "quantity": 1
       }
     ],
     "variantImages": [
@@ -456,12 +456,12 @@
       {
         "color": "Azul Royal",
         "size": "M",
-        "quantity": 0
+        "quantity": 1
       },
       {
         "color": "Vermelho",
         "size": "M",
-        "quantity": 0
+        "quantity": 1
       }
     ],
     "variantImages": [
@@ -517,12 +517,12 @@
       {
         "color": "Vermelho",
         "size": "M",
-        "quantity": 0
+        "quantity": 1
       },
       {
         "color": "Fuscia",
         "size": "M",
-        "quantity": 0
+        "quantity": 1
       }
     ],
     "variantImages": [
