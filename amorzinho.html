@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amorzinho 💖 1 Ano de Namoro</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #2d0b15 0%, #3a0d1a 100%);
+      margin: 0;
+      padding: 0;
+      color: #ffb3b3;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 16px 64px 16px;
+      background: rgba(40, 0, 20, 0.92);
+      border-radius: 24px;
+      box-shadow: 0 8px 32px rgba(80,0,30,0.25);
+      margin-top: 40px;
+      border: 2px solid #7a0026;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.8rem;
+      margin-bottom: 0.5em;
+      color: #ff2d55;
+      text-shadow: 0 2px 12px #7a0026;
+    }
+    h2 {
+      text-align: center;
+      font-size: 1.6rem;
+      margin-bottom: 1.5em;
+      color: #ffb3b3;
+      text-shadow: 0 1px 6px #7a0026;
+    }
+    .gallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 32px;
+    }
+    .gallery img {
+      width: 220px;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 16px;
+      box-shadow: 0 2px 16px #7a0026cc;
+      border: 3px solid #7a0026;
+      background: #2d0b15;
+      transition: transform 0.2s, filter 0.2s;
+      filter: grayscale(10%) brightness(0.92) contrast(1.1);
+    }
+    .gallery img:hover {
+      transform: scale(1.07) rotate(-2deg);
+      border-color: #ff2d55;
+      filter: none;
+    }
+    .love-text {
+      font-size: 1.2rem;
+      line-height: 1.7;
+      margin: 32px 0;
+      text-align: center;
+      color: #ffb3b3;
+      background: rgba(60,0,20,0.85);
+      border-radius: 12px;
+      padding: 24px 16px;
+      box-shadow: 0 2px 12px #7a0026cc;
+      border: 1.5px solid #ff2d55;
+    }
+    .hearts {
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: 24px;
+      color: #ff2d55;
+      text-shadow: 0 2px 8px #7a0026;
+    }
+    @media (max-width: 600px) {
+      .gallery img {
+        width: 100px;
+        height: 100px;
+      }
+      .container {
+        padding: 12px 2px 32px 2px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hearts">💖💑✨</div>
+    <h1>1 Ano de Amor</h1>
+    <h2>João & [Nome do Amor]</h2>
+    <div class="gallery">
+      <img src="assets/amorzinho1.jpg" alt="Momentos felizes juntos">
+      <img src="assets/amorzinho2.jpg" alt="Sorrisos e abraços">
+      <img src="assets/amorzinho3.jpg" alt="Viagens e aventuras">
+      <img src="assets/amorzinho4.jpg" alt="Carinho e cumplicidade">
+      <img src="assets/amorzinho5.jpg" alt="Mais um momento especial">
+      <!-- Adicione mais fotos aqui -->
+    </div>
+    <div class="love-text">
+      <p>
+        Há um ano, nossos caminhos se juntaram, cada dia tem sido uma nova aventura ao seu lado, e olha... que aventuras kkkk. Obrigado por cada sorriso, cada abraço, cada palavra de carinho e cada momento compartilhado.<br><br>
+        Que venham muitos outros anos, recheados de amor, cumplicidade e sonhos realizados. Você é o meu porto seguro, minha alegria diária e o melhor presente que a vida me deu.<br><br>
+        Te amo infinitamente!
+      </p>
+    </div>
+    <div class="gallery">
+      <img src="assets/amorzinho6.jpg" alt="Passeios inesquecíveis">
+      <img src="assets/amorzinho7.jpg" alt="Risadas e diversão">
+      <img src="assets/amorzinho8.jpg" alt="Mais amor">
+      <img src="assets/amorzinho9.jpg" alt="Juntos para sempre">
+      <!-- Adicione mais fotos aqui -->
+    </div>
+    <div class="love-text">
+      <p>
+        "O amor é feito de pequenos gestos, grandes sonhos e infinitos momentos juntos. Obrigado por ser meu amor, minha inspiração e minha melhor companhia. Que nosso amor continue crescendo e florescendo a cada novo dia!"</br><br>
+        EU TE AMO minha princesinha, minha melhor amiga, minha parceira de vida. Que nosso amor continue crescendo e florescendo a cada novo dia!
+      </p>
+    </div>
+    <!-- <div class="hearts">❤️🌹💘</div> -->
+    <div class="hearts">Jogos rápidos</div>
+    <div id="romantic-game-root" style="margin-top:48px;"></div>
+  </div>
+  <script type="module" src="/src/romantic-game-entry.tsx"></script>
+</body>
+</html>
