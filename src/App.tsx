@@ -120,26 +120,6 @@ export default function App() {
         <div className="text-center mb-12 mt-8">
           <h1 className="text-cyan-700 mb-2">Coleção Verão</h1>
           <p className="text-gray-600">Moda praia e fitness com estilo</p>
-          <button
-            onClick={() => navigate('/amorzinho')}
-            style={{
-              marginTop: 24,
-              background: '#ff2d55',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 12,
-              padding: '14px 32px',
-              fontSize: 20,
-              fontWeight: 600,
-              boxShadow: '0 2px 8px #7a0026cc',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-            }}
-            onMouseOver={e => (e.currentTarget.style.background = '#a8325a')}
-            onMouseOut={e => (e.currentTarget.style.background = '#ff2d55')}
-          >
-            💖 Surpresa de 1 Ano de Namoro
-          </button>
         </div>
 
         <ProductGrid
