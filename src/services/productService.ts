@@ -1,41 +1,11 @@
-import { Product, Color, StockItem } from '../types';
+import { Product, StockItem } from '../types';
+import { fetchProductsFromSheets } from './googleSheetsService';
 
 const STORAGE_KEY = 'coral_fit_products';
-// URL do arquivo JSON no GitHub (raw)
-const PRODUCTS_JSON_URL = 'https://raw.githubusercontent.com/jpcs1605/coral_fit_ecommerce/main/public/products.json';
-// Fallback para arquivo local
-const PRODUCTS_JSON_URL_LOCAL = '/products.json';
 
 // Função auxiliar para gerar ID único
 export function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-// Função para carregar produtos do arquivo JSON
-async function loadProductsFromJSON(): Promise<Product[]> {
-  try {
-    // Tenta primeiro do GitHub
-    console.log('[ProductService] Buscando produtos do GitHub...');
-    let response = await fetch(PRODUCTS_JSON_URL);
-    
-    // Se falhar, tenta do arquivo local
-    if (!response.ok) {
-      console.warn('Falha ao buscar do GitHub, tentando arquivo local...');
-      response = await fetch(PRODUCTS_JSON_URL_LOCAL);
-    }
-    
-    if (!response.ok) {
-      console.warn('Arquivo products.json não encontrado');
-      return [];
-    }
-    
-    const products = await response.json();
-    console.log('[ProductService] ✓ Produtos carregados do JSON:', products.length);
-    return products;
-  } catch (error) {
-    console.error('Erro ao carregar products.json:', error);
-    return [];
-  }
 }
 
 // Carregar produtos do localStorage
@@ -50,45 +20,41 @@ export function loadProducts(): Product[] {
   }
 }
 
-// Carregar produtos (async) - busca do GitHub primeiro, localStorage como fallback
+// Carregar produtos (async) - busca do Google Sheets primeiro, localStorage como fallback
 export async function loadProductsAsync(): Promise<Product[]> {
   try {
-    // SEMPRE tenta buscar do GitHub primeiro
-    console.log('[ProductService] Buscando produtos do GitHub...');
-    const productsFromJSON = await loadProductsFromJSON();
-    
-    if (productsFromJSON.length > 0) {
-      // Salva no localStorage para futuras consultas offline
-      saveProducts(productsFromJSON);
-      console.log('[ProductService] ✓ Produtos do GitHub salvos no localStorage');
-      return productsFromJSON;
+    console.log('[ProductService] Buscando produtos do Google Sheets...');
+    const products = await fetchProductsFromSheets();
+
+    if (products.length > 0) {
+      saveProducts(products);
+      console.log('[ProductService] ✓ Produtos do Google Sheets carregados:', products.length);
+      return products;
     }
-    
-    // Se falhou ao buscar do GitHub, tenta localStorage como fallback
-    console.log('[ProductService] Falha ao buscar do GitHub, usando localStorage...');
+
+    // Fallback: localStorage (última leitura bem-sucedida)
+    console.warn('[ProductService] Sheets sem dados, usando localStorage...');
     const stored = localStorage.getItem(STORAGE_KEY);
-    
     if (stored) {
-      const products = JSON.parse(stored);
-      if (products.length > 0) {
-        console.log('[ProductService] Produtos carregados do localStorage (fallback):', products.length);
-        return products;
+      const cached = JSON.parse(stored) as Product[];
+      if (cached.length > 0) {
+        console.log('[ProductService] Usando cache local:', cached.length);
+        return cached;
       }
     }
-    
+
     return [];
   } catch (error) {
-    console.error('Erro ao carregar produtos:', error);
-    // Em caso de erro, tenta localStorage
+    console.error('[ProductService] Erro ao buscar do Sheets:', error);
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        const products = JSON.parse(stored);
-        console.log('[ProductService] Usando localStorage devido a erro:', products.length);
-        return products;
+        const cached = JSON.parse(stored) as Product[];
+        console.log('[ProductService] Fallback localStorage após erro:', cached.length);
+        return cached;
       }
-    } catch (e) {
-      console.error('Erro ao carregar do localStorage:', e);
+    } catch {
+      // noop
     }
     return [];
   }

@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import { X, Check } from 'lucide-react';
+import { useState } from 'react';
+import { X, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../types';
-import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from './ui/carousel';
 
 interface ProductModalProps {
   product: Product;
@@ -11,219 +10,226 @@ interface ProductModalProps {
 }
 
 export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductModalProps) {
-  // Funções auxiliares para validar combinações disponíveis
-  const getAvailableColorsForSize = (size: string): string[] => {
-    return product.stock
-      .filter(item => item.size === size && item.quantity > 0)
-      .map(item => item.color);
+  const isColorAvailableForSize = (color: string, size: string) =>
+    product.stock.some(i => i.color === color && i.size === size && i.quantity > 0);
+
+  const isSizeAvailableForColor = (size: string, color: string) =>
+    product.stock.some(i => i.size === size && i.color === color && i.quantity > 0);
+
+  const getInitial = () => {
+    for (const c of product.colors)
+      for (const s of product.sizes)
+        if (isColorAvailableForSize(c.name, s)) return { color: c.name, size: s };
+    return { color: product.colors[0]?.name ?? '', size: product.sizes[0] ?? '' };
   };
 
-  const getAvailableSizesForColor = (color: string): string[] => {
-    return product.stock
-      .filter(item => item.color === color && item.quantity > 0)
-      .map(item => item.size);
-  };
-
-  const isColorAvailableForSize = (color: string, size: string): boolean => {
-    return product.stock.some(
-      item => item.color === color && item.size === size && item.quantity > 0
-    );
-  };
-
-  const isSizeAvailableForColor = (size: string, color: string): boolean => {
-    return product.stock.some(
-      item => item.size === size && item.color === color && item.quantity > 0
-    );
-  };
-
-  const [selectedColor, setSelectedColor] = useState(product.colors[0].name);
-  const [selectedSize, setSelectedSize] = useState(product.sizes[0]);
+  const init = getInitial();
+  const [selectedColor, setSelectedColor] = useState(init.color);
+  const [selectedSize, setSelectedSize] = useState(init.size);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [imgIndex, setImgIndex] = useState(0);
 
   if (!isOpen) return null;
 
-  const handleAddToCart = () => {
+  const images = product.images?.length ? product.images : product.image ? [product.image] : [];
+  const idx = Math.min(imgIndex, Math.max(0, images.length - 1));
+  const unavailable = !isColorAvailableForSize(selectedColor, selectedSize);
+  const isFitness = product.category === 'fitness';
+
+  const handleAdd = () => {
     onAddToCart(product, selectedColor, selectedSize);
     setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-      onClose();
-    }, 1500);
+    setTimeout(() => { setShowSuccess(false); onClose(); }, 1500);
   };
 
+  /* ── Carrossel de imagem ─────────────────────────────── */
+  const ImageBlock = ({ imgWidth }: { imgWidth: number | string }) => (
+    <div style={{ width: imgWidth, flexShrink: 0 }}>
+      {/* Imagem principal */}
+      <div style={{ width: '100%', aspectRatio: '3/4', borderRadius: 16, overflow: 'hidden', background: '#f3f4f6', position: 'relative' }}>
+        {images[idx] && (
+          <img src={images[idx]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        )}
+      </div>
+      {/* Navegação */}
+      {images.length > 1 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 }}>
+          <button
+            onClick={() => setImgIndex(i => (i - 1 + images.length) % images.length)}
+            style={{ background: '#f3f4f6', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <ChevronLeft style={{ width: 14, height: 14, color: '#374151' }} />
+          </button>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {images.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setImgIndex(i)}
+                style={{ width: 6, height: 6, borderRadius: '50%', border: 'none', cursor: 'pointer', background: i === idx ? '#06b6d4' : '#d1d5db', padding: 0 }}
+              />
+            ))}
+          </div>
+          <button
+            onClick={() => setImgIndex(i => (i + 1) % images.length)}
+            style={{ background: '#f3f4f6', border: 'none', borderRadius: '50%', width: 28, height: 28, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <ChevronRight style={{ width: 14, height: 14, color: '#374151' }} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  /* ── Seletores de cor e tamanho ──────────────────────── */
+  const Selectors = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      {/* Cor */}
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 600, color: '#374151', margin: '0 0 8px' }}>Cor</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {product.colors.map(color => {
+            const avail = isSizeAvailableForColor(selectedSize, color.name);
+            const sel = selectedColor === color.name;
+            return (
+              <button
+                key={color.name}
+                onClick={() => setSelectedColor(color.name)}
+                title={color.name}
+                style={{
+                  width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
+                  background: color.hex, position: 'relative', flexShrink: 0,
+                  boxShadow: sel
+                    ? `0 0 0 3px #fff, 0 0 0 5px #06b6d4`
+                    : avail ? '0 0 0 2px #e5e7eb' : '0 0 0 2px #d1d5db',
+                  opacity: avail ? 1 : 0.45,
+                }}
+              >
+                {sel && (
+                  <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Check style={{ width: 16, height: 16, color: '#fff', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
+                  </span>
+                )}
+                {!avail && !sel && (
+                  <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.4)', borderRadius: '50%' }}>
+                    <X style={{ width: 12, height: 12, color: '#6b7280' }} />
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Tamanho */}
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 600, color: '#374151', margin: '0 0 8px' }}>Tamanho</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {product.sizes.map(size => {
+            const avail = isColorAvailableForSize(selectedColor, size);
+            const sel = selectedSize === size;
+            return (
+              <button
+                key={size}
+                onClick={() => setSelectedSize(size)}
+                style={{
+                  padding: '7px 14px', borderRadius: 10, border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 500,
+                  background: sel ? 'linear-gradient(to right,#06b6d4,#0891b2)' : avail ? '#f3f4f6' : '#f9fafb',
+                  color: sel ? '#fff' : avail ? '#374151' : '#9ca3af',
+                  boxShadow: sel ? '0 2px 8px rgba(6,182,212,0.35)' : 'none',
+                  opacity: avail ? 1 : 0.5,
+                }}
+              >
+                {size}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Aviso indisponível */}
+      {unavailable && (
+        <div style={{ background: '#fffbeb', border: '1px solid #fcd34d', borderRadius: 10, padding: '10px 12px', color: '#92400e', fontSize: 12 }}>
+          Combinação indisponível. Escolha outra cor ou tamanho.
+        </div>
+      )}
+
+      {/* Botão */}
+      <button
+        onClick={handleAdd}
+        disabled={showSuccess || unavailable}
+        style={{
+          width: '100%', padding: '14px', borderRadius: 12, border: 'none', cursor: unavailable ? 'not-allowed' : 'pointer',
+          fontSize: 14, fontWeight: 600, color: '#fff',
+          background: showSuccess ? '#22c55e' : unavailable ? '#9ca3af' : 'linear-gradient(to right,#06b6d4,#0891b2)',
+          boxShadow: (!showSuccess && !unavailable) ? '0 4px 12px rgba(6,182,212,0.4)' : 'none',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          transition: 'all 0.2s',
+        }}
+      >
+        {showSuccess
+          ? <><Check style={{ width: 18, height: 18 }} /> Colocado no Carrinho!</>
+          : 'Colocar no Carrinho'
+        }
+      </button>
+    </div>
+  );
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white z-10 flex justify-end p-4 border-b">
+    <div className="modal-overlay fixed inset-0 z-50" style={{ background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}>
+      <div className="modal-sheet bg-white shadow-2xl max-w-4xl w-full" style={{ display: 'flex', flexDirection: 'column' }}>
+
+        {/* Header do modal */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }}>
+          <span style={{
+            fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999,
+            background: isFitness ? '#f3e8ff' : '#ecfeff',
+            color: isFitness ? '#7e22ce' : '#0e7490',
+          }}>
+            {isFitness ? 'Fitness' : product.category}
+          </span>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            style={{ background: '#f3f4f6', border: 'none', borderRadius: '50%', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <X className="w-6 h-6" />
+            <X style={{ width: 16, height: 16, color: '#374151' }} />
           </button>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6 p-6">
-          <div className="flex items-center justify-center min-h-[360px] bg-white rounded-2xl shadow-md p-0 w-full max-w-[440px] mx-auto">
-            {/* Seleciona imagens da variação, se houver, senão usa images gerais */}
-            {(() => {
-              let images: string[] = [];
-              if (product.variantImages) {
-                const found = product.variantImages.find(
-                  v => v.color === selectedColor && v.size === selectedSize
-                );
-                if (found && found.images.length > 0) {
-                  images = found.images;
-                }
-              }
-              if (images.length === 0) {
-                images = product.images && product.images.length > 0 ? product.images : [product.image];
-              }
-              if (images.length === 1) {
-                return (
-                  <img
-                    src={images[0]}
-                    alt={product.name + ' ' + selectedColor + ' ' + selectedSize}
-                    className="w-full h-[360px] object-contain rounded-2xl bg-white"
-                    style={{ maxWidth: 420, maxHeight: 420 }}
-                  />
-                );
-              }
-              // Carrossel: apenas uma imagem por vez, centralizada
-              return (
-                <Carousel className="w-full max-w-[420px] relative">
-                  <CarouselContent className="!ml-0">
-                    {images.map((img, idx) => (
-                      <CarouselItem key={idx} className="flex items-center justify-center !basis-full !pl-0">
-                        <img
-                          src={img}
-                          alt={product.name + ' ' + selectedColor + ' ' + selectedSize}
-                          className="w-full h-[360px] object-contain rounded-2xl bg-white"
-                          style={{ maxWidth: 420, maxHeight: 420 }}
-                        />
-                      </CarouselItem>
-                    ))}
-                  </CarouselContent>
-                  {images.length > 1 && <CarouselPrevious />}
-                  {images.length > 1 && <CarouselNext />}
-                </Carousel>
-              );
-            })()}
+        {/* Corpo: imagem + info básica lado a lado */}
+        <div className="modal-body" style={{ flex: 1, minHeight: 0 }}>
+          {/* Imagem */}
+          <div className="modal-image-col">
+            <ImageBlock imgWidth="100%" />
           </div>
 
-          <div className="flex flex-col">
-            <span className={`inline-block w-fit text-xs px-3 py-1 rounded-full mb-3 ${
-              product.category === 'fitness' 
-                ? 'bg-purple-100 text-purple-700' 
-                : 'bg-cyan-100 text-cyan-700'
-            }`}>
-              {product.category === 'fitness' ? 'Fitness' : 'Praia'}
-            </span>
-
-            <h2 className="text-gray-800 mb-3">{product.name}</h2>
-            <p className="text-gray-600 mb-4 whitespace-pre-line">{product.description}</p>
-            <div className="text-cyan-600 mb-6">
+          {/* Info básica (mobile: nome+preço ao lado da imagem; desktop: nome+desc+preço+seletores) */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0, flex: 1 }}>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#111827', margin: 0, lineHeight: 1.3 }}>
+              {product.name}
+            </p>
+            <p style={{ fontSize: 18, fontWeight: 700, color: '#0891b2', margin: 0 }}>
               R$ {product.price.toFixed(2).replace('.', ',')}
-            </div>
-
-            <div className="mb-6">
-              <label className="block text-gray-700 mb-3">Cor</label>
-              <div className="flex flex-wrap gap-3">
-                {product.colors.map((color) => {
-                  const isAvailable = isSizeAvailableForColor(selectedSize, color.name);
-                  return (
-                    <button
-                      key={color.name}
-                      onClick={() => setSelectedColor(color.name)}
-                      className={`relative group ${!isAvailable ? 'opacity-50' : ''}`}
-                      title={!isAvailable ? `${color.name} não disponível no tamanho ${selectedSize}` : color.name}
-                    >
-                      <div
-                        className={`w-12 h-12 rounded-full transition-all ${
-                          selectedColor === color.name
-                            ? 'ring-4 ring-cyan-500 ring-offset-2'
-                            : isAvailable
-                            ? 'ring-2 ring-gray-200 hover:ring-gray-300'
-                            : 'ring-2 ring-gray-300'
-                        }`}
-                        style={{ backgroundColor: color.hex }}
-                      >
-                        {selectedColor === color.name && (
-                          <div className="absolute inset-0 flex items-center justify-center">
-                            <Check className="w-6 h-6 text-white drop-shadow-lg" />
-                          </div>
-                        )}
-                        {!isAvailable && selectedColor !== color.name && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-white/40 rounded-full">
-                            <X className="w-5 h-5 text-gray-600" />
-                          </div>
-                        )}
-                      </div>
-                      <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                        {color.name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <label className="block text-gray-700 mb-3">Tamanho</label>
-              <div className="flex flex-wrap gap-3">
-                {product.sizes.map((size) => {
-                  const isAvailable = isColorAvailableForSize(selectedColor, size);
-                  return (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      title={!isAvailable ? `Tamanho ${size} não disponível na cor ${selectedColor}` : undefined}
-                      className={`px-6 py-3 rounded-xl transition-all ${
-                        selectedSize === size
-                          ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg'
-                          : isAvailable
-                          ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          : 'bg-gray-50 text-gray-400 opacity-50 hover:bg-gray-100'
-                      }`}
-                    >
-                      {size}
-                      {!isAvailable && (
-                        <span className="ml-1 text-xs">✕</span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {!isColorAvailableForSize(selectedColor, selectedSize) && (
-              <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-sm">
-                Esta combinação de cor e tamanho não está disponível no momento. Escolha outra opção.
-              </div>
+            </p>
+            {product.description && (
+              <p style={{ fontSize: 12, color: '#6b7280', margin: 0, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {product.description}
+              </p>
             )}
 
-            <button
-              onClick={handleAddToCart}
-              disabled={showSuccess || !isColorAvailableForSize(selectedColor, selectedSize)}
-              className={`w-full py-4 rounded-xl text-white transition-all duration-300 ${
-                showSuccess
-                  ? 'bg-green-500'
-                  : !isColorAvailableForSize(selectedColor, selectedSize)
-                  ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-cyan-500 to-cyan-600 hover:from-cyan-600 hover:to-cyan-700 shadow-lg hover:shadow-xl'
-              }`}
-            >
-              {showSuccess ? (
-                <span className="flex items-center justify-center gap-2">
-                  <Check className="w-5 h-5" />
-                  Colocado no Carrinho!
-                </span>
-              ) : (
-                'Colocar no Carrinho'
-              )}
-            </button>
+            {/* Seletores — visíveis só no desktop (dentro do modal-body) */}
+            <div className="modal-selectors" style={{ marginTop: 8 }}>
+              <Selectors />
+            </div>
           </div>
         </div>
+
+        {/* Seletores — visíveis só no mobile (fora do modal-body) */}
+        <div className="modal-selectors-mobile" style={{ padding: '0 12px 16px', borderTop: '1px solid #f3f4f6' }}>
+          <div style={{ paddingTop: 12 }}>
+            <Selectors />
+          </div>
+        </div>
+
       </div>
     </div>
   );

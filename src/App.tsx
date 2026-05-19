@@ -1,17 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Header } from './components/Header';
 import { ProductGrid } from './components/ProductGrid';
 import { Cart } from './components/Cart';
 import { CheckoutModal } from './components/CheckoutModal';
-import { SheetDebugger } from './components/SheetDebugger';
-import { SetupGuide } from './components/SetupGuide';
 import { Product, CartItem } from './types';
-import { loadProducts as loadProductsFromService, loadProductsAsync, getCategories } from './services/productService';
+import { loadProductsAsync, getCategories } from './services/productService';
 import { Toast } from './components/Toast';
 
 export default function App() {
-  const navigate = useNavigate();
   const [cartOpen, setCartOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -116,30 +112,10 @@ export default function App() {
         onSearchChange={setSearchTerm}
       />
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="text-center mb-12 mt-8">
-          <h1 className="text-cyan-700 mb-2">Coleção Verão</h1>
-          <p className="text-gray-600">Moda praia e fitness com estilo</p>
-          <button
-            onClick={() => navigate('/amorzinho')}
-            style={{
-              marginTop: 24,
-              background: '#ff2d55',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 12,
-              padding: '14px 32px',
-              fontSize: 20,
-              fontWeight: 600,
-              boxShadow: '0 2px 8px #7a0026cc',
-              cursor: 'pointer',
-              transition: 'background 0.2s',
-            }}
-            onMouseOver={e => (e.currentTarget.style.background = '#a8325a')}
-            onMouseOut={e => (e.currentTarget.style.background = '#ff2d55')}
-          >
-            💖 Surpresa de 1 Ano de Namoro
-          </button>
+      <main style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 12px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 16, marginTop: 8 }}>
+          <h1 style={{ color: '#0e7490', marginBottom: 4, fontSize: 'clamp(1.4rem, 5vw, 2.5rem)' }}>Coleção Verão</h1>
+          <p style={{ color: '#6b7280', fontSize: 'clamp(0.8rem, 3vw, 1rem)' }}>Moda praia e fitness com estilo</p>
         </div>
 
         <ProductGrid
@@ -183,9 +159,6 @@ export default function App() {
         />
       )}
 
-      {/* Debug tool - remove in production */}
-      <SheetDebugger />
-      <SetupGuide />
     </div>
   );
 }
