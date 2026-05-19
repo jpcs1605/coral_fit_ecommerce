@@ -22,7 +22,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem, o
         onClick={onClose}
       />
       
-      <div className="relative bg-white w-full max-w-md shadow-2xl flex flex-col h-full">
+      <div className="cart-panel relative bg-white shadow-2xl flex flex-col h-full">
         <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-cyan-500 to-cyan-600 text-white">
           <div className="flex items-center gap-3">
             <ShoppingBag className="w-6 h-6" />
@@ -54,7 +54,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem, o
                     <img
                       src={item.product.image}
                       alt={item.product.name}
-                      className="w-24 h-24 object-cover rounded-lg"
+                      className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
                     />
                     
                     <div className="flex-1">
@@ -101,7 +101,7 @@ export function Cart({ isOpen, onClose, items, onUpdateQuantity, onRemoveItem, o
               ))}
             </div>
 
-            <div className="border-t p-6 bg-gray-50">
+            <div className="border-t p-4 bg-gray-50">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-gray-700">Total</span>
                 <span className="text-cyan-600">

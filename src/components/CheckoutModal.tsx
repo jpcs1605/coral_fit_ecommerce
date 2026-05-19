@@ -258,14 +258,13 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
     setAppliedCoupon(null);
     setCouponDiscount(0);
     setCouponError(null);
-    setCouponSuccess(null);
     setIsCouponExpanded(false);
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white p-6 rounded-t-3xl">
+    <div className="modal-overlay fixed inset-0 z-50 bg-black/50 backdrop-blur-sm">
+      <div className="modal-sheet bg-white shadow-2xl max-w-2xl w-full overflow-y-auto">
+        <div className="sticky top-0 bg-gradient-to-r from-cyan-500 to-cyan-600 text-white p-4 md:p-6 rounded-t-3xl">
           <div className="flex items-center justify-between">
             <h2>Finalizar Pedido</h2>
             <button
@@ -277,7 +276,7 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6">
+        <form onSubmit={handleSubmit} className="p-4 md:p-6">
           {/* Dados Pessoais */}
           <section className="mb-6">
             <h3 className="text-gray-800 mb-4">Dados Pessoais</h3>

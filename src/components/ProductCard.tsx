@@ -7,54 +7,97 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
+  const isFitness = product.category.toLowerCase().includes('fitness') || product.category.toLowerCase().includes('academia');
+
   return (
-    <div 
+    <div
       onClick={onClick}
-      className="group bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+      style={{
+        background: '#fff',
+        borderRadius: 14,
+        overflow: 'hidden',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'transform 0.2s, box-shadow 0.2s',
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 6px 20px rgba(0,0,0,0.14)';
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
+      }}
     >
-      <div className="relative overflow-hidden aspect-square">
-        <img 
-          src={product.image} 
+      {/* Imagem */}
+      <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', background: '#f3f4f6' }}>
+        <img
+          src={product.image}
           alt={product.name}
-          className="product-image transition-transform duration-500"
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-          <button className="bg-white text-cyan-600 px-6 py-2 text-sm rounded-full flex items-center justify-center gap-2 hover:bg-cyan-50 transition-colors shadow-lg">
-            <ShoppingCart className="w-4 h-4" />
-            <span>Ver Detalhes</span>
-          </button>
+        {/* Overlay hover */}
+        <div
+          className="group-hover-overlay"
+          style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to top, rgba(0,0,0,0.55), transparent)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            opacity: 0, transition: 'opacity 0.25s',
+          }}
+          onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.opacity = '1'}
+          onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.opacity = '0'}
+        >
+          <div style={{
+            background: '#fff', color: '#0891b2', padding: '6px 14px', borderRadius: 999,
+            display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+          }}>
+            <ShoppingCart style={{ width: 14, height: 14 }} />
+            Ver Detalhes
+          </div>
         </div>
       </div>
 
-      <div className="p-3 h-32 flex flex-col">
-        <div className="flex items-center gap-2 mb-1.5">
-          <span className={`text-xs px-2 py-0.5 rounded-full ${
-            product.category === 'fitness' 
-              ? 'bg-purple-100 text-purple-700' 
-              : 'bg-cyan-100 text-cyan-700'
-          }`}>
-            {product.category === 'fitness' ? 'Fitness' : 'Praia'}
-          </span>
-        </div>
+      {/* Info */}
+      <div style={{ padding: '8px 10px', display: 'flex', flexDirection: 'column', gap: 5 }}>
+        {/* Badge categoria */}
+        <span style={{
+          alignSelf: 'flex-start',
+          fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
+          background: isFitness ? '#f3e8ff' : '#ecfeff',
+          color: isFitness ? '#7e22ce' : '#0e7490',
+        }}>
+          {isFitness ? 'Fitness' : product.category}
+        </span>
 
-        <h3 className="text-gray-800 text-sm mb-1.5 line-clamp-2">{product.name}</h3>
-        
-        <div className="flex items-center gap-1.5 mb-2">
-          {product.colors.slice(0, 3).map((color, index) => (
-            <div
-              key={index}
-              className="w-5 h-5 rounded-full border-2 border-gray-200"
-              style={{ backgroundColor: color.hex }}
-              title={color.name}
-            />
+        {/* Nome */}
+        <p style={{
+          color: '#1f2937', fontSize: 12, fontWeight: 500, lineHeight: 1.3,
+          margin: 0,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
+          {product.name}
+        </p>
+
+        {/* Cores */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {product.colors.slice(0, 4).map((color, i) => (
+            <div key={i} style={{
+              width: 14, height: 14, borderRadius: '50%',
+              background: color.hex, border: '1px solid rgba(0,0,0,0.12)',
+              flexShrink: 0,
+            }} title={color.name} />
           ))}
-          {product.colors.length > 3 && (
-            <span className="text-xs text-gray-500">+{product.colors.length - 3}</span>
+          {product.colors.length > 4 && (
+            <span style={{ fontSize: 10, color: '#9ca3af' }}>+{product.colors.length - 4}</span>
           )}
         </div>
 
-        <p className="text-cyan-600 font-semibold text-sm mt-auto">
+        {/* Preço */}
+        <p style={{ color: '#0891b2', fontWeight: 700, fontSize: 13, margin: 0 }}>
           R$ {product.price.toFixed(2).replace('.', ',')}
         </p>
       </div>

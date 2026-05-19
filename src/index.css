@@ -1,3 +1,186 @@
+/* ── Responsividade geral ─────────────────────────────────────── */
+
+/* Header */
+.header-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.header-brand-sub {
+  display: none;
+}
+
+/* Linha do desktop (categorias + search inline com o logo) */
+.header-desktop-row {
+  display: none;
+}
+
+/* Segunda linha do header (search + categorias) — sempre visível no mobile */
+.header-mobile-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 8px;
+}
+
+/* Card grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+/* Filtros de categoria: scroll horizontal no mobile */
+.category-filters {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+  padding-bottom: 4px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+}
+.category-filters::-webkit-scrollbar { display: none; }
+
+/* Modal — bottom sheet no mobile */
+.modal-overlay {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal-sheet {
+  border-radius: 24px 24px 0 0;
+  max-height: 93vh;
+  overflow-y: auto;
+}
+
+/* Coluna da imagem dentro do modal */
+.modal-image-col {
+  width: 130px;
+  flex-shrink: 0;
+}
+
+/* Layout interno do modal: lado a lado no mobile */
+.modal-body {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+/* Seletores dentro do modal-body (desktop) — oculto no mobile */
+.modal-selectors {
+  display: none;
+}
+
+/* Seletores abaixo do modal-body (mobile) — oculto no desktop */
+.modal-selectors-mobile {
+  display: block;
+}
+
+/* Carrinho — largura total no mobile */
+.cart-panel {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .header-logo {
+    width: 56px;
+    height: 56px;
+  }
+
+  .header-brand-sub {
+    display: block;
+  }
+
+  /* Linha 2 do header some no desktop */
+  .header-mobile-row {
+    display: none;
+  }
+
+  /* Linha de categorias + search aparece no desktop */
+  .header-desktop-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .category-filters {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-x: visible;
+    margin-bottom: 32px;
+  }
+
+  .modal-overlay {
+    align-items: center;
+    padding: 16px;
+  }
+
+  .modal-sheet {
+    border-radius: 24px;
+    max-height: 90vh;
+  }
+
+  .modal-image-col {
+    width: 100%;
+    max-width: 440px;
+    flex-shrink: unset;
+  }
+
+  .modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding: 24px;
+  }
+
+  .modal-selectors {
+    display: block; /* seletores dentro do modal-body visíveis no desktop */
+  }
+
+  .modal-selectors-mobile {
+    display: none; /* seção mobile de seletores some no desktop */
+  }
+
+  .cart-panel {
+    width: 100%;
+    max-width: 448px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .product-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* Esconde scrollbar mantendo o scroll funcional */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Imagem do card de produto: fit e zoom out no hover */
 .product-image {
   max-height: 400px;

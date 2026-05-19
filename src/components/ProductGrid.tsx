@@ -131,31 +131,31 @@ export function ProductGrid({
 
   return (
     <>
-      <div className="mb-8 flex flex-wrap justify-center items-center gap-4">
-        <button
-          onClick={() => onSelectCategory('all')}
-          className={`px-6 py-2 rounded-full transition-all duration-300 ${selectedCategory === 'all'
-              ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
-            }`}
-        >
-          Todos ({products.length})
-        </button>
-
-        {categories.map((category) => (
-          <button
-            key={category}
-            onClick={() => onSelectCategory(category)}
-            className={`px-6 py-2 rounded-full transition-all duration-300 ${selectedCategory === category
-                ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg'
-                : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-          >
-            {category} ({products.filter(p => p.category === category).length})
-          </button>
-        ))}
-
-        {/* Botão de atualizar planilha removido */}
+      <div className="category-filters">
+        {[{ key: 'all', label: `Todos (${products.length})` }, ...categories.map(c => ({ key: c, label: `${c} (${products.filter(p => p.category === c).length})` }))].map(({ key, label }) => {
+          const active = selectedCategory === key;
+          return (
+            <button
+              key={key}
+              onClick={() => onSelectCategory(key)}
+              style={{
+                flexShrink: 0,
+                padding: '6px 14px',
+                borderRadius: 999,
+                fontSize: 13,
+                fontWeight: active ? 600 : 400,
+                border: active ? 'none' : '1px solid #e5e7eb',
+                background: active ? 'linear-gradient(to right,#06b6d4,#0891b2)' : '#fff',
+                color: active ? '#fff' : '#374151',
+                cursor: 'pointer',
+                boxShadow: active ? '0 2px 8px rgba(6,182,212,0.35)' : 'none',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       {searchFilteredProducts.length === 0 ? (
@@ -164,7 +164,7 @@ export function ProductGrid({
           <p className="text-gray-500 text-sm">Tente ajustar sua busca ou filtros</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 mb-16">
+        <div className="product-grid mb-16">
           {searchFilteredProducts.map((product) => (
             <ProductCard
               key={product.id}

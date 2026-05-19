@@ -16,109 +16,134 @@ interface HeaderProps {
   onSearchChange: (term: string) => void;
 }
 
-export function Header({ cartItemCount, onCartClick, categories, onSelectCategory, searchTerm, onSearchChange }: HeaderProps) {
+function CategoriesDropdown({
+  categories,
+  onSelectCategory,
+  align = 'start',
+}: {
+  categories: string[];
+  onSelectCategory: (cat: string) => void;
+  align?: 'start' | 'end';
+}) {
   return (
-    <header className="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-3 cursor-pointer" onClick={() => onSelectCategory('all')}>
-              <img src={logo} alt="Coral Fit" className="h-16 w-16 object-contain" />
-              <div>
-                <h2 className="text-cyan-700">Coral Fit</h2>
-                <p className="text-gray-600 text-sm">Moda Praia e Fitness</p>
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 12, outline: 'none', background: 'linear-gradient(to right, #ecfeff, #eff6ff)', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', flexShrink: 0 }}
+      >
+        <span style={{ color: '#0e7490', fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap' }}>Categorias</span>
+        <ChevronDown style={{ width: 14, height: 14, color: '#0e7490' }} />
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent
+        align={align}
+        className="w-56 p-2 bg-white border-cyan-100 shadow-2xl rounded-2xl"
+        style={{ zIndex: 9999 }}
+      >
+        <DropdownMenuItem
+          onClick={() => onSelectCategory('all')}
+          className="rounded-lg px-3 py-2.5 cursor-pointer hover:bg-cyan-50 transition-all mb-1"
+        >
+          <div className="flex items-center gap-2">
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg,#a855f7,#ec4899)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Sparkles style={{ width: 14, height: 14, color: '#fff' }} />
+            </div>
+            <span style={{ fontWeight: 600, color: '#1f2937', fontSize: 14 }}>Todas</span>
+          </div>
+        </DropdownMenuItem>
+
+        {categories.map((cat) => {
+          const isFitness = cat.toLowerCase().includes('fitness') || cat.toLowerCase().includes('academia');
+          const isPraia = cat.toLowerCase().includes('praia') || cat.toLowerCase().includes('beach');
+          const bg = isFitness
+            ? 'linear-gradient(135deg,#f97316,#ef4444)'
+            : isPraia
+            ? 'linear-gradient(135deg,#06b6d4,#3b82f6)'
+            : 'linear-gradient(135deg,#9ca3af,#6b7280)';
+          return (
+            <DropdownMenuItem
+              key={cat}
+              onClick={() => onSelectCategory(cat)}
+              className="rounded-lg px-3 py-2.5 cursor-pointer hover:bg-cyan-50 transition-all mb-1"
+            >
+              <div className="flex items-center gap-2">
+                <div style={{ width: 32, height: 32, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {isFitness ? <Dumbbell style={{ width: 14, height: 14, color: '#fff' }} />
+                    : isPraia ? <Waves style={{ width: 14, height: 14, color: '#fff' }} />
+                    : <Sparkles style={{ width: 14, height: 14, color: '#fff' }} />}
+                </div>
+                <span style={{ fontWeight: 600, color: '#1f2937', fontSize: 14, textTransform: 'capitalize' }}>{cat}</span>
               </div>
-            </div>
-
-            {/* Submenus / Categorias */}
-            <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-50 to-blue-50 hover:from-cyan-100 hover:to-blue-100 transition-all duration-300 outline-none shadow-sm hover:shadow-md">
-                <span className="text-cyan-700 font-semibold text-sm">Categorias</span>
-                <ChevronDown className="w-4 h-4 text-cyan-600" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-64 p-2 bg-white/80 backdrop-blur-2xl border-cyan-100 shadow-2xl rounded-2xl">
-                <DropdownMenuItem 
-                  onClick={() => onSelectCategory('all')}
-                  className="rounded-lg px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 transition-all duration-200 mb-1"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-md">
-                      <Sparkles className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-800">Todas</div>
-                      <div className="text-xs text-gray-500">Ver todos os produtos</div>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-                {categories.map((cat) => {
-                  const isFitness = cat.toLowerCase().includes('fitness');
-                  const isPraia = cat.toLowerCase().includes('praia');
-                  
-                  return (
-                    <DropdownMenuItem 
-                      key={cat} 
-                      onClick={() => onSelectCategory(cat)}
-                      className="rounded-lg px-4 py-3 cursor-pointer hover:bg-gradient-to-r hover:from-cyan-50 hover:to-blue-50 transition-all duration-200 mb-1"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-md ${
-                          isFitness 
-                            ? 'bg-gradient-to-br from-orange-500 to-red-500' 
-                            : isPraia
-                            ? 'bg-gradient-to-br from-cyan-500 to-blue-500'
-                            : 'bg-gradient-to-br from-gray-400 to-gray-500'
-                        }`}>
-                          {isFitness ? (
-                            <Dumbbell className="w-5 h-5 text-white" />
-                          ) : isPraia ? (
-                            <Waves className="w-5 h-5 text-white" />
-                          ) : (
-                            <Sparkles className="w-5 h-5 text-white" />
-                          )}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-800 capitalize">{cat}</div>
-                          <div className="text-xs text-gray-500">
-                            {isFitness ? 'Roupas para treino' : isPraia ? 'Roupas de praia' : 'Ver produtos'}
-                          </div>
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
-                  );
-                })}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Campo de Busca */}
-          <div className="flex-1 max-w-md">
-            <div className="flex items-center gap-3 px-4 h-10 rounded-xl border border-gray-200 bg-gray-50/50 focus-within:bg-white focus-within:border-cyan-500 focus-within:ring-2 focus-within:ring-cyan-200 transition-all duration-300">
-              <Search className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <input
-                type="text"
-                placeholder="Buscar produtos..."
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="flex-1 bg-transparent text-gray-700 placeholder:text-gray-400 text-sm leading-none outline-none"
-              />
-            </div>
-          </div>
-
-          <button
-            onClick={onCartClick}
-            className="relative p-3 rounded-full bg-gradient-to-br from-cyan-500 to-cyan-600 text-white hover:from-cyan-600 hover:to-cyan-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-          >
-            <ShoppingBag className="w-6 h-6" />
-            {cartItemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-coral-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-semibold">
-                {cartItemCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-    </header>
+            </DropdownMenuItem>
+          );
+        })}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
+function SearchInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', height: 36, borderRadius: 12, border: '1px solid #e5e7eb', background: '#f9fafb', flex: 1, minWidth: 0 }}>
+      <Search style={{ width: 15, height: 15, color: '#9ca3af', flexShrink: 0 }} />
+      <input
+        type="text"
+        placeholder="Buscar produtos..."
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 13, color: '#374151', minWidth: 0 }}
+      />
+    </div>
+  );
+}
+
+export function Header({ cartItemCount, onCartClick, categories, onSelectCategory, searchTerm, onSearchChange }: HeaderProps) {
+  return (
+    <header style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)', boxShadow: '0 1px 4px rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 40 }}>
+
+      {/* ── Linha 1: logo + nome + [desktop: cats + search] + cart ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px 6px' }}>
+
+        {/* Logo + nome */}
+        <button
+          onClick={() => onSelectCategory('all')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}
+        >
+          <img src={logo} alt="Coral Fit" className="header-logo" />
+          <div style={{ textAlign: 'left', lineHeight: 1.2 }}>
+            <p style={{ color: '#0e7490', fontWeight: 700, fontSize: 15, margin: 0 }}>Coral Fit</p>
+            <p className="header-brand-sub" style={{ color: '#6b7280', fontSize: 11, margin: 0 }}>Moda Praia e Fitness</p>
+          </div>
+        </button>
+
+        {/* Desktop: categorias + search (aparece via CSS @media) */}
+        <div className="header-desktop-row">
+          <CategoriesDropdown categories={categories} onSelectCategory={onSelectCategory} />
+          <SearchInput value={searchTerm} onChange={onSearchChange} />
+        </div>
+
+        {/* Spacer — empurra carrinho para direita no mobile */}
+        <div style={{ flex: 1 }} />
+
+        {/* Carrinho */}
+        <button
+          onClick={onCartClick}
+          style={{ position: 'relative', padding: 10, borderRadius: '50%', background: 'linear-gradient(135deg,#06b6d4,#0891b2)', border: 'none', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(6,182,212,0.4)' }}
+        >
+          <ShoppingBag style={{ width: 20, height: 20, color: '#fff' }} />
+          {cartItemCount > 0 && (
+            <span style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', fontSize: 11, fontWeight: 700, borderRadius: '50%', width: 20, height: 20, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {cartItemCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      {/* ── Linha 2: mobile — search + categorias (some no desktop via CSS) ── */}
+      <div className="header-mobile-row">
+        <SearchInput value={searchTerm} onChange={onSearchChange} />
+        <CategoriesDropdown categories={categories} onSelectCategory={onSelectCategory} align="end" />
+      </div>
+
+    </header>
+  );
+}
