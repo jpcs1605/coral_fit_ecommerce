@@ -5,6 +5,8 @@ import { Cart } from './components/Cart';
 import { CheckoutModal } from './components/CheckoutModal';
 import { Product, CartItem } from './types';
 import { loadProductsAsync, getCategories } from './services/productService';
+import { fetchBannerSlides, BannerSlide } from './services/googleSheetsService';
+import { BannerCarousel } from './components/BannerCarousel';
 import { Toast } from './components/Toast';
 
 export default function App() {
@@ -20,8 +22,10 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [bannerSlides, setBannerSlides] = useState<BannerSlide[]>([]);
 
   useEffect(() => {
+    fetchBannerSlides().then(setBannerSlides);
     loadProducts();
 
     // Listener para mudanças no localStorage (quando admin atualiza)
@@ -113,6 +117,8 @@ export default function App() {
       />
 
       <main style={{ maxWidth: 1280, margin: '0 auto', padding: '16px 12px' }}>
+        <BannerCarousel slides={bannerSlides} />
+
         <div style={{ textAlign: 'center', marginBottom: 16, marginTop: 8 }}>
           <h1 style={{ color: '#0e7490', marginBottom: 4, fontSize: 'clamp(1.4rem, 5vw, 2.5rem)' }}>Coleção Verão</h1>
           <p style={{ color: '#6b7280', fontSize: 'clamp(0.8rem, 3vw, 1rem)' }}>Moda praia e fitness com estilo</p>

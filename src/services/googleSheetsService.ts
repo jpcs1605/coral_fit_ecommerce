@@ -2,7 +2,55 @@ import { Product, Color, StockItem } from '../types';
 
 const SHEET_ID = '1qC-tgJRlZM01NSMSEIaB2Np7Ut-NgMzrztgh0FluU20';
 const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+const BANNER_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=BANNER`;
 const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/jpcs1605/coral_fit_ecommerce/main/public/products.json';
+
+// ---------------------------------------------------------------------------
+// Estrutura esperada da aba BANNER:
+//
+// | Imagem | Título (opcional) | Link (opcional) |
+//
+// Cada linha é um slide do carrossel.
+// URLs de imagem podem ser do Google Drive (qualquer formato compartilhado).
+// ---------------------------------------------------------------------------
+
+export interface BannerSlide {
+  image: string;
+  title?: string;
+  link?: string;
+}
+
+export async function fetchBannerSlides(): Promise<BannerSlide[]> {
+  try {
+    const res = await fetch(BANNER_CSV_URL);
+    if (!res.ok) return [];
+    const text = await res.text();
+    const rows = parseCSV(text);
+    if (rows.length < 2) return [];
+
+    const headers = rows[0].map(h => h.toLowerCase().trim());
+    const imgCol   = headers.findIndex(h => h.includes('imagem') || h.includes('image') || h.includes('foto') || h.includes('url'));
+    const titleCol = headers.findIndex(h => h.includes('título') || h.includes('titulo') || h.includes('title'));
+    const linkCol  = headers.findIndex(h => h.includes('link') || h.includes('url_destino'));
+
+    if (imgCol === -1) return [];
+
+    const slides: BannerSlide[] = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      const rawImg = r[imgCol]?.trim();
+      if (!rawImg) continue;
+      slides.push({
+        image: toDriveDirectUrl(rawImg),
+        title: titleCol >= 0 ? r[titleCol]?.trim() || undefined : undefined,
+        link:  linkCol  >= 0 ? r[linkCol]?.trim()  || undefined : undefined,
+      });
+    }
+    return slides;
+  } catch {
+    return [];
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Estrutura esperada da planilha (uma linha por variação):
