@@ -52,8 +52,8 @@ function CategoriesDropdown({
         </DropdownMenuItem>
 
         {categories.map((cat) => {
-          const isFitness = cat.toLowerCase().includes('fitness');
-          const isPraia = cat.toLowerCase().includes('praia');
+          const isFitness = cat.toLowerCase().includes('fitness') || cat.toLowerCase().includes('academia');
+          const isPraia = cat.toLowerCase().includes('praia') || cat.toLowerCase().includes('beach');
           const bg = isFitness
             ? 'linear-gradient(135deg,#f97316,#ef4444)'
             : isPraia

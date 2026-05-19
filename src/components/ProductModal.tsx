@@ -34,7 +34,7 @@ export function ProductModal({ product, isOpen, onClose, onAddToCart }: ProductM
   const images = product.images?.length ? product.images : product.image ? [product.image] : [];
   const idx = Math.min(imgIndex, Math.max(0, images.length - 1));
   const unavailable = !isColorAvailableForSize(selectedColor, selectedSize);
-  const isFitness = product.category === 'fitness';
+  const isFitness = product.category.toLowerCase().includes('fitness') || product.category.toLowerCase().includes('academia');
 
   const handleAdd = () => {
     onAddToCart(product, selectedColor, selectedSize);

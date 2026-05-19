@@ -7,7 +7,7 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
-  const isFitness = product.category === 'fitness';
+  const isFitness = product.category.toLowerCase().includes('fitness') || product.category.toLowerCase().includes('academia');
 
   return (
     <div
