@@ -66,19 +66,5 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
-    proxy: {
-      '/sheets-data/products.csv': {
-        target: 'https://docs.google.com',
-        changeOrigin: true,
-        rewrite: () =>
-          '/spreadsheets/d/1qC-tgJRlZM01NSMSEIaB2Np7Ut-NgMzrztgh0FluU20/gviz/tq?tqx=out:csv',
-      },
-      '/sheets-data/banners.csv': {
-        target: 'https://docs.google.com',
-        changeOrigin: true,
-        rewrite: () =>
-          '/spreadsheets/d/1qC-tgJRlZM01NSMSEIaB2Np7Ut-NgMzrztgh0FluU20/gviz/tq?tqx=out:csv&sheet=BANNER',
-      },
-    },
   },
 });

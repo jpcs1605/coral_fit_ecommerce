@@ -1,9 +1,8 @@
 import { Product, Color, StockItem } from '../types';
 
-// URLs servidas localmente: em dev o Vite faz proxy transparente para o Sheets;
-// em produção os arquivos são gerados pelo script prebuild (scripts/fetchSheetsData.mjs).
-const SHEET_CSV_URL  = '/sheets-data/products.csv';
-const BANNER_CSV_URL = '/sheets-data/banners.csv';
+const SHEET_ID = '1qC-tgJRlZM01NSMSEIaB2Np7Ut-NgMzrztgh0FluU20';
+const SHEET_CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
+const BANNER_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=BANNER`;
 const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/jpcs1605/coral_fit_ecommerce/main/public/products.json';
 
 // ---------------------------------------------------------------------------
