@@ -12,12 +12,17 @@
   display: none;
 }
 
-/* Linha do desktop (categorias + search inline com o logo) */
+/* Linha do desktop (search inline com o logo) */
 .header-desktop-row {
   display: none;
 }
 
-/* Segunda linha do header (search + categorias) — sempre visível no mobile */
+/* Botão de lupa no mobile — some no desktop */
+.header-search-toggle {
+  display: flex;
+}
+
+/* Segunda linha do header (search expansível) — usada só no mobile */
 .header-mobile-row {
   display: flex;
   align-items: center;
@@ -100,6 +105,11 @@
 
   /* Linha 2 do header some no desktop */
   .header-mobile-row {
+    display: none;
+  }
+
+  /* Botão lupa some no desktop (search fica inline) */
+  .header-search-toggle {
     display: none;
   }
 

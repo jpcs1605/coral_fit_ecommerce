@@ -59,6 +59,7 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
+        "prebuild": "node scripts/fetchSheetsData.mjs",
         "predeploy": "npm run build",
         "deploy": "gh-pages -d build"
     }

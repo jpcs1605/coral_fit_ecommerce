@@ -110,8 +110,7 @@ export default function App() {
       <Header
         cartItemCount={cartItems.reduce((sum, item) => sum + item.quantity, 0)}
         onCartClick={() => setCartOpen(true)}
-        categories={categories}
-        onSelectCategory={setSelectedCategory}
+        onLogoClick={() => setSelectedCategory('all')}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
       />

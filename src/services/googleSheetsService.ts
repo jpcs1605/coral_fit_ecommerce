@@ -1,8 +1,9 @@
 import { Product, Color, StockItem } from '../types';
 
-const SHEET_ID = '1qC-tgJRlZM01NSMSEIaB2Np7Ut-NgMzrztgh0FluU20';
-const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-const BANNER_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=BANNER`;
+// URLs servidas localmente: em dev o Vite faz proxy transparente para o Sheets;
+// em produção os arquivos são gerados pelo script prebuild (scripts/fetchSheetsData.mjs).
+const SHEET_CSV_URL  = '/sheets-data/products.csv';
+const BANNER_CSV_URL = '/sheets-data/banners.csv';
 const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/jpcs1605/coral_fit_ecommerce/main/public/products.json';
 
 // ---------------------------------------------------------------------------
@@ -199,7 +200,7 @@ async function fetchSheetRows(): Promise<Product[]> {
     category:    findCol(headers, 'categoria', 'category'),
     price:       findCol(headers, 'preço', 'preco', 'price'),
     pricePaid:   findCol(headers, 'pago', 'paid'),
-    description: findCol(headers, 'descrição', 'descricao', 'description'),
+    description: findCol(headers, 'descritivo', 'descrição', 'descricao', 'description'),
     color:       findCol(headers, 'cor', 'color', 'colour'),
     size:        findCol(headers, 'tamanho', 'size', 'tam'),
     quantity:    findCol(headers, 'quantidade', 'quantity', 'qtd', 'qty', 'estoque'),

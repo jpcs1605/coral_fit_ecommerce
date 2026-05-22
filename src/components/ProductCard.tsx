@@ -1,13 +1,34 @@
 import { Product } from '../types';
 import { ShoppingCart } from 'lucide-react';
 
+// Paleta de cores para os badges de categoria.
+// Cada categoria da planilha recebe uma cor deterministicamente pelo hash do nome.
+const CATEGORY_PALETTE: { bg: string; color: string }[] = [
+  { bg: '#ecfeff', color: '#0e7490' }, // cyan
+  { bg: '#f3e8ff', color: '#7e22ce' }, // roxo
+  { bg: '#fff7ed', color: '#c2410c' }, // laranja
+  { bg: '#f0fdf4', color: '#15803d' }, // verde
+  { bg: '#fdf2f8', color: '#9d174d' }, // pink
+  { bg: '#eff6ff', color: '#1d4ed8' }, // azul
+  { bg: '#fefce8', color: '#854d0e' }, // amarelo
+  { bg: '#fef2f2', color: '#991b1b' }, // vermelho
+];
+
+function categoryColor(category: string) {
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = (hash * 31 + category.charCodeAt(i)) >>> 0;
+  }
+  return CATEGORY_PALETTE[hash % CATEGORY_PALETTE.length];
+}
+
 interface ProductCardProps {
   product: Product;
   onClick: () => void;
 }
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
-  const isFitness = product.category.toLowerCase().includes('fitness') || product.category.toLowerCase().includes('academia');
+  const badgeColor = categoryColor(product.category);
 
   return (
     <div
@@ -67,10 +88,10 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         <span style={{
           alignSelf: 'flex-start',
           fontSize: 10, fontWeight: 600, padding: '2px 8px', borderRadius: 999,
-          background: isFitness ? '#f3e8ff' : '#ecfeff',
-          color: isFitness ? '#7e22ce' : '#0e7490',
+          background: badgeColor.bg,
+          color: badgeColor.color,
         }}>
-          {isFitness ? 'Fitness' : product.category}
+          {product.category}
         </span>
 
         {/* Nome */}
@@ -81,6 +102,17 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         }}>
           {product.name}
         </p>
+
+        {/* Descritivo */}
+        {product.description && (
+          <p style={{
+            color: '#6b7280', fontSize: 11, lineHeight: 1.4,
+            margin: 0,
+            display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+          }}>
+            {product.description}
+          </p>
+        )}
 
         {/* Cores */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>

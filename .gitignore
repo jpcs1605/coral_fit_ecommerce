@@ -34,3 +34,6 @@ dist-ssr
 
 # Build output (keep only final build in /build or /dist)
 # If you want to commit the build folder, remove 'build' from here
+
+# Dados de planilha gerados em build-time (não commitar)
+public/sheets-data/
