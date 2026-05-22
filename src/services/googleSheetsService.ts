@@ -317,18 +317,31 @@ async function fetchJSONFallback(): Promise<Map<string, Pick<Product, 'image' | 
   }
 }
 
+// ---------------------------------------------------------------------------
+// Cache em memória: evita bater na planilha a cada renderização.
+// Os dados são reaproveitados por 5 minutos; após isso a próxima chamada
+// refaz o fetch.
+// ---------------------------------------------------------------------------
+let _cache: { products: Product[]; expiresAt: number } | null = null;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
 /**
  * Ponto de entrada principal.
  * Busca da planilha (fonte de verdade) e mescla com JSON do GitHub para
  * imagens/descrição enquanto a planilha não tiver essas colunas preenchidas.
+ * Resultado fica em cache por 5 minutos.
  */
 export async function fetchProductsFromSheets(): Promise<Product[]> {
+  if (_cache && Date.now() < _cache.expiresAt) {
+    return _cache.products;
+  }
+
   const [sheetProducts, jsonMap] = await Promise.all([
     fetchSheetRows().catch((): Product[] => []),
     fetchJSONFallback(),
   ]);
 
-  return sheetProducts.map(p => {
+  const products = sheetProducts.map(p => {
     const json = jsonMap.get(p.code);
     return {
       ...p,
@@ -337,4 +350,7 @@ export async function fetchProductsFromSheets(): Promise<Product[]> {
       description: p.description  || json?.description || '',
     };
   });
+
+  _cache = { products, expiresAt: Date.now() + CACHE_TTL_MS };
+  return products;
 }

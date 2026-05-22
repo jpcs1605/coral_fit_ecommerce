@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ProductCard } from './ProductCard';
 import { ProductModal } from './ProductModal';
 import { Toast } from './Toast';
 import { Product } from '../types';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const PAGE_SIZE = 8;
 
 interface ProductGridProps {
   products: Product[];
@@ -29,6 +31,10 @@ export function ProductGrid({
   searchTerm
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [page, setPage] = useState(1);
+
+  // Volta para a primeira página ao mudar categoria ou busca
+  useEffect(() => { setPage(1); }, [selectedCategory, searchTerm]);
 
   if (loading) {
     return (
@@ -163,17 +169,71 @@ export function ProductGrid({
           <p className="text-gray-600 text-lg mb-2">Nenhum produto encontrado</p>
           <p className="text-gray-500 text-sm">Tente ajustar sua busca ou filtros</p>
         </div>
-      ) : (
-        <div className="product-grid mb-16">
-          {searchFilteredProducts.map((product) => (
-            <ProductCard
-              key={product.id}
-              product={product}
-              onClick={() => setSelectedProduct(product)}
-            />
-          ))}
-        </div>
-      )}
+      ) : (() => {
+        const totalPages = Math.ceil(searchFilteredProducts.length / PAGE_SIZE);
+        const pageItems = searchFilteredProducts.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+        return (
+          <>
+            <div className="product-grid">
+              {pageItems.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onClick={() => setSelectedProduct(product)}
+                />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, margin: '24px 0 16px' }}>
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 36, height: 36, borderRadius: '50%', border: '1px solid #e5e7eb',
+                    background: page === 1 ? '#f9fafb' : '#fff', cursor: page === 1 ? 'default' : 'pointer',
+                    color: page === 1 ? '#d1d5db' : '#0891b2',
+                  }}
+                >
+                  <ChevronLeft style={{ width: 18, height: 18 }} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setPage(n)}
+                    style={{
+                      width: 36, height: 36, borderRadius: '50%', border: 'none',
+                      background: n === page ? 'linear-gradient(135deg,#06b6d4,#0891b2)' : '#f3f4f6',
+                      color: n === page ? '#fff' : '#374151',
+                      fontWeight: n === page ? 700 : 400,
+                      fontSize: 13, cursor: 'pointer',
+                      boxShadow: n === page ? '0 2px 8px rgba(6,182,212,0.35)' : 'none',
+                    }}
+                  >
+                    {n}
+                  </button>
+                ))}
+
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: 36, height: 36, borderRadius: '50%', border: '1px solid #e5e7eb',
+                    background: page === totalPages ? '#f9fafb' : '#fff', cursor: page === totalPages ? 'default' : 'pointer',
+                    color: page === totalPages ? '#d1d5db' : '#0891b2',
+                  }}
+                >
+                  <ChevronRight style={{ width: 18, height: 18 }} />
+                </button>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {selectedProduct && (
         <ProductModal
