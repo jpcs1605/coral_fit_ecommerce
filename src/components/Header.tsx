@@ -71,7 +71,7 @@ export function Header({ cartItemCount, onCartClick, onLogoClick, searchTerm, on
           className="header-search-toggle"
           onClick={toggleMobileSearch}
           aria-label="Buscar produtos"
-          style={{ padding: 10, borderRadius: '50%', background: mobileSearchOpen ? 'linear-gradient(135deg,#06b6d4,#0891b2)' : '#f3f4f6', border: 'none', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{ padding: 10, borderRadius: '50%', background: mobileSearchOpen ? 'linear-gradient(135deg,#06b6d4,#0891b2)' : '#f3f4f6', border: 'none', cursor: 'pointer', flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}
         >
           {mobileSearchOpen
             ? <X style={{ width: 18, height: 18, color: '#fff' }} />
