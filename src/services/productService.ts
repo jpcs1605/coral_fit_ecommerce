@@ -13,7 +13,14 @@ export function loadProducts(): Product[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return [];
-    return JSON.parse(stored);
+    const products: Product[] = JSON.parse(stored);
+    // Se tiver URLs do formato thumbnail (inválido), descarta o cache para forçar re-fetch
+    const hasInvalidUrls = products.some(p => p.image?.includes('drive.google.com/thumbnail'));
+    if (hasInvalidUrls) {
+      localStorage.removeItem(STORAGE_KEY);
+      return [];
+    }
+    return products;
   } catch (error) {
     console.error('Erro ao carregar produtos:', error);
     return [];

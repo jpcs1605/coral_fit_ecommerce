@@ -4,7 +4,7 @@ import { ProductGrid } from './components/ProductGrid';
 import { Cart } from './components/Cart';
 import { CheckoutModal } from './components/CheckoutModal';
 import { Product, CartItem } from './types';
-import { loadProductsAsync, getCategories } from './services/productService';
+import { loadProducts as loadProductsSync, loadProductsAsync, getCategories } from './services/productService';
 import { fetchBannerSlides, BannerSlide } from './services/googleSheetsService';
 import { BannerCarousel } from './components/BannerCarousel';
 import { Toast } from './components/Toast';
@@ -14,11 +14,11 @@ export default function App() {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
-  // Product Data State
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Product Data State — inicializa com cache do localStorage (síncrono, sem spinner)
+  const [products, setProducts] = useState<Product[]>(loadProductsSync);
+  const [loading, setLoading] = useState(() => loadProductsSync().length === 0);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<string[]>([]);
+  const [categories, setCategories] = useState<string[]>(() => getCategories());
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -26,19 +26,24 @@ export default function App() {
 
   useEffect(() => {
     fetchBannerSlides().then(setBannerSlides);
-    loadProducts();
+    refreshProducts();
 
-    // Listener para mudanças no localStorage (quando admin atualiza)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'coral_fit_products') {
-        loadProducts();
+    // Listener para mudanças no localStorage (outra aba/admin): só reler o cache, sem re-fetch de rede
+    const reloadFromCache = () => {
+      const data = loadProductsSync();
+      if (data.length > 0) {
+        setProducts(data);
+        setCategories(getCategories());
       }
     };
 
-    // Listener customizado para mudanças na mesma aba
-    const handleProductUpdate = () => {
-      loadProducts();
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'coral_fit_products') reloadFromCache();
     };
+
+    // productsUpdated é disparado pelo saveProducts — só recarrega do cache local,
+    // NÃO refaz fetch de rede (evita loop infinito)
+    const handleProductUpdate = () => reloadFromCache();
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('productsUpdated', handleProductUpdate);
@@ -49,27 +54,34 @@ export default function App() {
     };
   }, []);
 
-  const loadProducts = async () => {
+  // Atualiza produtos em background; só mostra spinner se não tiver cache
+  const refreshProducts = async (showSpinner = false) => {
     try {
-      setLoading(true);
+      if (showSpinner) setLoading(true);
       setError(null);
-      
+
       const data = await loadProductsAsync();
 
       if (data.length === 0) {
-        setError('Nenhum produto encontrado. Acesse o painel admin para cadastrar produtos.');
+        if (products.length === 0) {
+          setError('Nenhum produto encontrado. Acesse o painel admin para cadastrar produtos.');
+        }
       } else {
         setProducts(data);
         setCategories(getCategories());
       }
     } catch (err) {
-      setError('Erro ao carregar produtos.');
-      setToast({ message: 'Erro ao carregar produtos', type: 'error' });
+      if (products.length === 0) {
+        setError('Erro ao carregar produtos.');
+        setToast({ message: 'Erro ao carregar produtos', type: 'error' });
+      }
       console.error(err);
     } finally {
       setLoading(false);
     }
   };
+
+  const loadProducts = () => refreshProducts(true);
 
   const addToCart = (product: Product, color: string, size: string) => {
     const existingItemIndex = cartItems.findIndex(

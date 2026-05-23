@@ -160,11 +160,14 @@ function findCol(headers: string[], ...terms: string[]): number {
   return headers.findIndex(h => terms.some(t => h.toLowerCase().includes(t)));
 }
 
-// Encontra todos os índices de colunas de imagem (Imagem 1, Imagem 2, Foto 1…)
+// Encontra todos os índices de colunas de imagem (Imagem 1, Imagem 2, Foto 1, URL Imagem…)
 function findImageCols(headers: string[]): number[] {
   return headers
     .map((h, i) => ({ h: h.toLowerCase().trim(), i }))
-    .filter(({ h }) => h.startsWith('imagem') || h.startsWith('foto') || h.startsWith('image'))
+    .filter(({ h }) =>
+      h.startsWith('imagem') || h.startsWith('foto') || h.startsWith('image') ||
+      h.includes('imagem') || h.includes('foto') || h.includes('image') || h.includes('url')
+    )
     .map(({ i }) => i);
 }
 

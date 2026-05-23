@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { Product } from '../types';
 import { ShoppingCart } from 'lucide-react';
+
+const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='40' fill='%23d1d5db'%3E👗%3C/text%3E%3C/svg%3E";
 
 // Paleta de cores para os badges de categoria.
 // Cada categoria da planilha recebe uma cor deterministicamente pelo hash do nome.
@@ -29,6 +32,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
   const badgeColor = categoryColor(product.category);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   return (
     <div
@@ -54,10 +59,26 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
     >
       {/* Imagem */}
       <div style={{ position: 'relative', aspectRatio: '3/4', overflow: 'hidden', background: '#f3f4f6' }}>
+        {/* Skeleton shimmer enquanto carrega */}
+        {!imgLoaded && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)',
+            backgroundSize: '200% 100%',
+            animation: 'shimmer 1.4s infinite',
+          }} />
+        )}
         <img
-          src={product.image}
+          src={imgError || !product.image ? PLACEHOLDER : product.image}
           alt={product.name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          decoding="async"
+          onLoad={() => setImgLoaded(true)}
+          onError={() => { setImgError(true); setImgLoaded(true); }}
+          style={{
+            width: '100%', height: '100%', objectFit: imgError ? 'contain' : 'cover',
+            opacity: imgLoaded ? 1 : 0,
+            transition: 'opacity 0.3s ease',
+          }}
         />
         {/* Overlay hover */}
         <div
