@@ -3,6 +3,7 @@ import { X, MapPin, Phone, User, Home, Package, Truck, Loader2, Tag, Check, Aler
 import { CartItem, CheckoutFormData, Coupon } from '../types';
 import { calculateShipping } from '../services/googleSheets';
 import { validateCoupon, useCoupon } from '../services/couponService';
+import { buildOrderPayload, submitOrder } from '../services/orderService';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -226,7 +227,19 @@ export function CheckoutModal({ isOpen, onClose, items, onSuccess }: CheckoutMod
         console.error('Erro ao registrar uso do cupom:', error);
       }
     }
-    
+
+    // Gravar pedido na planilha (não bloqueia o fluxo em caso de falha)
+    const orderPayload = buildOrderPayload(
+      formData,
+      items,
+      paymentMethod,
+      total,
+      shippingInfo,
+      appliedCoupon?.code,
+      couponDiscount,
+    );
+    submitOrder(orderPayload);
+
     window.open(whatsappUrl, '_blank');
     onSuccess();
   };
