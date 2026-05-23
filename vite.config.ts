@@ -66,5 +66,21 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      // Em dev, /api/sheets é redirecionado direto para o Google Sheets.
+      // Em produção (Netlify), a Netlify Function faz esse trabalho.
+      '/api/sheets': {
+        target: 'https://docs.google.com',
+        changeOrigin: true,
+        rewrite: (path) => {
+          const url = new URL(path, 'http://localhost');
+          const sheet = url.searchParams.get('sheet') ?? '';
+          const id = process.env.SHEETS_ID ?? '1qC-tgJRlZM01NSMSEIaB2Np7Ut-NgMzrztgh0FluU20';
+          return sheet
+            ? `/spreadsheets/d/${id}/gviz/tq?tqx=out:csv&sheet=${sheet}`
+            : `/spreadsheets/d/${id}/gviz/tq?tqx=out:csv`;
+        },
+      },
+    },
   },
 });

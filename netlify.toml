@@ -1,0 +1,16 @@
+[build]
+  command   = "npm run build"
+  publish   = "build"
+  functions = "netlify/functions"
+
+# Proxy: /api/sheets → Netlify Function (browser nunca vê a URL do Sheets)
+[[redirects]]
+  from   = "/api/sheets"
+  to     = "/.netlify/functions/sheets"
+  status = 200
+
+# SPA fallback
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200

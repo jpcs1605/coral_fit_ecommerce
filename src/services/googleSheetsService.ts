@@ -1,8 +1,9 @@
 import { Product, Color, StockItem } from '../types';
 
-const SHEET_ID = '1qC-tgJRlZM01NSMSEIaB2Np7Ut-NgMzrztgh0FluU20';
-const SHEET_CSV_URL  = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv`;
-const BANNER_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=BANNER`;
+// URLs passam pelo proxy Netlify (/api/sheets) — o Sheet ID fica apenas no servidor.
+// Em desenvolvimento local use `netlify dev` ou configure o proxy no vite.config.ts.
+const SHEET_CSV_URL  = '/api/sheets?sheet=DATABASE_SITE';
+const BANNER_CSV_URL = '/api/sheets?sheet=BANNER';
 const GITHUB_JSON_URL = 'https://raw.githubusercontent.com/jpcs1605/coral_fit_ecommerce/main/public/products.json';
 
 // ---------------------------------------------------------------------------
