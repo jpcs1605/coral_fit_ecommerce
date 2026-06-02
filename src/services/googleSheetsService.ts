@@ -178,6 +178,7 @@ interface RawRow {
   code:        string;
   name:        string;
   category:    string;
+  subCategory: string;
   price:       string;
   pricePaid:   string;
   description: string;
@@ -200,6 +201,7 @@ async function fetchSheetRows(): Promise<Product[]> {
     code:        findCol(headers, 'código', 'codigo', 'code'),
     name:        findCol(headers, 'nome', 'name'),
     category:    findCol(headers, 'categoria', 'category'),
+    subCategory: findCol(headers, 'sub-categoria', 'subcategoria', 'sub_categoria', 'subcategory', 'sub-category'),
     price:       findCol(headers, 'preço', 'preco', 'price'),
     pricePaid:   findCol(headers, 'pago', 'paid'),
     description: findCol(headers, 'descritivo', 'descrição', 'descricao', 'description'),
@@ -225,6 +227,7 @@ async function fetchSheetRows(): Promise<Product[]> {
       code,
       name:        r[cols.name]?.trim()        ?? '',
       category:    r[cols.category]?.trim()    ?? '',
+      subCategory: cols.subCategory >= 0 ? (r[cols.subCategory]?.trim() ?? '') : '',
       price:       r[cols.price]?.trim()       ?? '',
       pricePaid:   cols.pricePaid >= 0 ? (r[cols.pricePaid]?.trim() ?? '') : '',
       description: cols.description >= 0 ? (r[cols.description]?.trim() ?? '') : '',
@@ -248,6 +251,8 @@ async function fetchSheetRows(): Promise<Product[]> {
     // Campos de nível produto: usa primeiro valor não-vazio do grupo
     const name        = group.find(r => r.name)?.name        ?? '';
     const category    = group.find(r => r.category)?.category ?? 'Praia';
+    const subCategoryRaw = group.find(r => r.subCategory)?.subCategory ?? '';
+    const subCategory = subCategoryRaw || undefined;
     const price       = parseFloat((group.find(r => r.price)?.price ?? '').replace(',', '.'))     || 0;
     const pricePaidRaw = parseFloat((group.find(r => r.pricePaid)?.pricePaid ?? '').replace(',', '.'));
     const pricePaid   = isNaN(pricePaidRaw) ? undefined : pricePaidRaw || undefined;
@@ -276,6 +281,7 @@ async function fetchSheetRows(): Promise<Product[]> {
       code,
       name,
       category,
+      subCategory,
       price,
       pricePaid,
       description,

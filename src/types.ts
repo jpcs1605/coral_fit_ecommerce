@@ -12,6 +12,7 @@ export interface Product {
    */
   variantImages?: VariantImage[];
   category: string;
+  subCategory?: string; // Sub-categoria (opcional)
   colors: Color[];
   sizes: string[];
   description: string; // Descrição completa

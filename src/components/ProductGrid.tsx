@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ProductCard } from './ProductCard';
 import { ProductModal } from './ProductModal';
 import { Toast } from './Toast';
 import { Product } from '../types';
-import { RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { RefreshCw, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 
 const PAGE_SIZE = 8;
 
@@ -31,10 +31,56 @@ export function ProductGrid({
   searchTerm
 }: ProductGridProps) {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string>('all');
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [dropdownAnchor, setDropdownAnchor] = useState<{ top: number; left: number } | null>(null);
   const [page, setPage] = useState(1);
+  const filtersRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const skipSubCatResetRef = useRef(false);
 
-  // Volta para a primeira página ao mudar categoria ou busca
-  useEffect(() => { setPage(1); }, [selectedCategory, searchTerm]);
+  const scheduleClose = () => {
+    closeTimerRef.current = setTimeout(() => {
+      setOpenDropdown(null);
+      setDropdownAnchor(null);
+    }, 150);
+  };
+
+  const cancelClose = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
+  // Volta para a primeira página e reseta sub-categoria ao mudar categoria ou busca
+  // Não fecha o dropdown aqui — ele é gerenciado pelo próprio clique no botão
+  useEffect(() => {
+    setPage(1);
+    if (skipSubCatResetRef.current) {
+      skipSubCatResetRef.current = false;
+    } else {
+      setSelectedSubCategory('all');
+    }
+  }, [selectedCategory, searchTerm]);
+
+  // Fecha dropdown ao clicar fora ou ao rolar a página
+  useEffect(() => {
+    const close = () => { setOpenDropdown(null); setDropdownAnchor(null); };
+    const onMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node;
+      const insideFilters = filtersRef.current?.contains(target);
+      const insideDropdown = dropdownRef.current?.contains(target);
+      if (!insideFilters && !insideDropdown) close();
+    };
+    document.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('scroll', close, true);
+    return () => {
+      document.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('scroll', close, true);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -91,14 +137,28 @@ export function ProductGrid({
     );
   }
 
+  // Sub-categorias disponíveis para a categoria selecionada
+  const subCategories = selectedCategory === 'all'
+    ? []
+    : [...new Set(
+        products
+          .filter(p => p.category === selectedCategory && p.subCategory)
+          .map(p => p.subCategory!)
+      )].sort();
+
   // Filter products by selected category
   const filteredProducts = selectedCategory === 'all'
     ? products
     : products.filter(p => p.category === selectedCategory);
 
+  // Filter by sub-category
+  const subFilteredProducts = selectedSubCategory === 'all'
+    ? filteredProducts
+    : filteredProducts.filter(p => p.subCategory === selectedSubCategory);
+
   // Apply search filter
   const searchFilteredProducts = searchTerm.trim()
-    ? filteredProducts.filter(product => {
+    ? subFilteredProducts.filter(product => {
         const searchLower = searchTerm.toLowerCase().trim();
         
         // Buscar no nome do produto
@@ -133,36 +193,136 @@ export function ProductGrid({
         
         return false;
       })
-    : filteredProducts;
+    : subFilteredProducts;
 
   return (
     <>
-      <div className="category-filters">
+      <div ref={filtersRef} className="category-filters" style={{ position: 'relative', alignItems: 'flex-start' }}>
         {[{ key: 'all', label: `Todos (${products.length})` }, ...categories.map(c => ({ key: c, label: `${c} (${products.filter(p => p.category === c).length})` }))].map(({ key, label }) => {
           const active = selectedCategory === key;
+          const catSubCategories = key === 'all' ? [] : [...new Set(
+            products.filter(p => p.category === key && p.subCategory).map(p => p.subCategory!)
+          )].sort();
+          const hasSubCats = catSubCategories.length > 0;
+          const isOpen = openDropdown === key;
+
           return (
-            <button
+            <div
               key={key}
-              onClick={() => onSelectCategory(key)}
-              style={{
-                flexShrink: 0,
-                padding: '6px 14px',
-                borderRadius: 999,
-                fontSize: 13,
-                fontWeight: active ? 600 : 400,
-                border: active ? 'none' : '1px solid #e5e7eb',
-                background: active ? 'linear-gradient(to right,#06b6d4,#0891b2)' : '#fff',
-                color: active ? '#fff' : '#374151',
-                cursor: 'pointer',
-                boxShadow: active ? '0 2px 8px rgba(6,182,212,0.35)' : 'none',
-                whiteSpace: 'nowrap',
+              style={{ position: 'relative', flexShrink: 0 }}
+              onMouseEnter={(e) => {
+                if (!hasSubCats) return;
+                cancelClose();
+                const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                setDropdownAnchor({ top: rect.bottom + 6, left: rect.left });
+                setOpenDropdown(key);
+              }}
+              onMouseLeave={() => {
+                if (hasSubCats) scheduleClose();
               }}
             >
-              {label}
-            </button>
+              <button
+                onClick={() => {
+                  setSelectedSubCategory('all');
+                  onSelectCategory(key);
+                  if (!hasSubCats) {
+                    setOpenDropdown(null);
+                    setDropdownAnchor(null);
+                  }
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  padding: '6px 14px',
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 400,
+                  border: active ? 'none' : '1px solid #e5e7eb',
+                  background: active ? 'linear-gradient(to right,#06b6d4,#0891b2)' : '#fff',
+                  color: active ? '#fff' : '#374151',
+                  cursor: 'pointer',
+                  boxShadow: active ? '0 2px 8px rgba(6,182,212,0.35)' : 'none',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {label}
+                {hasSubCats && (
+                  <ChevronDown style={{
+                    width: 13,
+                    height: 13,
+                    opacity: 0.8,
+                  }} />
+                )}
+              </button>
+            </div>
           );
         })}
       </div>
+
+      {/* Dropdown de sub-categorias — fixed para não ser cortado pelo overflow do container */}
+      {openDropdown && dropdownAnchor && (() => {
+        const catSubCategories = [...new Set(
+          products.filter(p => p.category === openDropdown && p.subCategory).map(p => p.subCategory!)
+        )].sort();
+        return (
+          <div
+            ref={dropdownRef}
+            onMouseEnter={() => cancelClose()}
+            onMouseLeave={() => scheduleClose()}
+            style={{
+              position: 'fixed',
+              top: dropdownAnchor.top,
+              left: dropdownAnchor.left,
+              zIndex: 9999,
+              background: '#fff',
+              border: '1px solid #e5e7eb',
+              borderRadius: 12,
+              boxShadow: '0 8px 24px rgba(0,0,0,0.13)',
+              padding: '6px 0',
+              minWidth: 180,
+              overflow: 'hidden',
+            }}
+          >
+            {catSubCategories.map(sc => {
+              const scActive = selectedSubCategory === sc;
+              const count = products.filter(p => p.category === openDropdown && p.subCategory === sc).length;
+              return (
+                <button
+                  key={sc}
+                  onClick={() => { skipSubCatResetRef.current = true; onSelectCategory(openDropdown!); setSelectedSubCategory(sc); setPage(1); setOpenDropdown(null); setDropdownAnchor(null); }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    padding: '8px 16px',
+                    fontSize: 13,
+                    fontWeight: scActive ? 600 : 400,
+                    background: scActive ? '#f0f9ff' : 'transparent',
+                    color: scActive ? '#0891b2' : '#374151',
+                    border: 'none',
+                    borderLeft: scActive ? '3px solid #0891b2' : '3px solid transparent',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    gap: 8,
+                  }}
+                >
+                  <span>{sc}</span>
+                  <span style={{
+                    fontSize: 11,
+                    color: scActive ? '#0891b2' : '#9ca3af',
+                    background: scActive ? '#e0f2fe' : '#f3f4f6',
+                    borderRadius: 999,
+                    padding: '1px 7px',
+                    fontWeight: 500,
+                  }}>{count}</span>
+                </button>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {searchFilteredProducts.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20">
