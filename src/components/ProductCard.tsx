@@ -4,17 +4,73 @@ import { ShoppingCart } from 'lucide-react';
 
 const PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect width='300' height='400' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-size='40' fill='%23d1d5db'%3E👗%3C/text%3E%3C/svg%3E";
 
-// Paleta de cores para os badges de categoria.
-// Cada categoria da planilha recebe uma cor deterministicamente pelo hash do nome.
-const CATEGORY_PALETTE: { bg: string; color: string }[] = [
-  { bg: '#ecfeff', color: '#0e7490' }, // cyan
-  { bg: '#f3e8ff', color: '#7e22ce' }, // roxo
-  { bg: '#fff7ed', color: '#c2410c' }, // laranja
-  { bg: '#f0fdf4', color: '#15803d' }, // verde
-  { bg: '#fdf2f8', color: '#9d174d' }, // pink
-  { bg: '#eff6ff', color: '#1d4ed8' }, // azul
-  { bg: '#fefce8', color: '#854d0e' }, // amarelo
-  { bg: '#fef2f2', color: '#991b1b' }, // vermelho
+// Paleta completa para badges de categoria — pastéis e tons vivos bem diferenciados.
+const CATEGORY_PALETTE: { bg: string; color: string; label?: string }[] = [
+  // — Família Turquesa / Ciano (brand) —
+  { bg: '#ecfeff', color: '#0e7490', label: 'turquesa claro' },
+  { bg: '#cffafe', color: '#0891b2', label: 'ciano' },
+  { bg: '#a5f3fc', color: '#0e7490', label: 'ciano médio' },
+  { bg: '#e0f7fa', color: '#006064', label: 'teal claro' },
+  { bg: '#b2ebf2', color: '#00838f', label: 'teal médio' },
+
+  // — Família Azul —
+  { bg: '#dbeafe', color: '#1d4ed8', label: 'azul bebê' },
+  { bg: '#bfdbfe', color: '#1e40af', label: 'azul céu' },
+  { bg: '#dbeafe', color: '#1e3a8a', label: 'royal blue' },
+  { bg: '#e0e7ff', color: '#3730a3', label: 'índigo' },
+  { bg: '#eef2ff', color: '#4f46e5', label: 'azul lavanda' },
+  { bg: '#ede9fe', color: '#4338ca', label: 'azul violeta' },
+
+  // — Família Lilás / Roxo —
+  { bg: '#f3e8ff', color: '#7e22ce', label: 'lilás' },
+  { bg: '#ede9fe', color: '#6d28d9', label: 'violeta' },
+  { bg: '#f5f3ff', color: '#5b21b6', label: 'lavanda' },
+  { bg: '#faf5ff', color: '#7c3aed', label: 'uva claro' },
+
+  // — Família Rosa —
+  { bg: '#fce7f3', color: '#be185d', label: 'rosa bebê' },
+  { bg: '#fdf2f8', color: '#9d174d', label: 'rosa quente' },
+  { bg: '#fce7f3', color: '#db2777', label: 'pink' },
+  { bg: '#fff0f3', color: '#c2185b', label: 'rosa chiclete' },
+  { bg: '#ffdde1', color: '#ad1457', label: 'rosa escuro' },
+
+  // — Família Coral / Pêssego —
+  { bg: '#fff1f0', color: '#c2410c', label: 'coral' },
+  { bg: '#ffe4e6', color: '#be123c', label: 'salmão' },
+  { bg: '#fff7ed', color: '#c2410c', label: 'pêssego' },
+  { bg: '#fef3c7', color: '#b45309', label: 'âmbar' },
+
+  // — Família Vermelho —
+  { bg: '#fef2f2', color: '#991b1b', label: 'vermelho claro' },
+  { bg: '#fee2e2', color: '#b91c1c', label: 'vermelho' },
+  { bg: '#fecaca', color: '#7f1d1d', label: 'vermelho escuro' },
+
+  // — Família Laranja —
+  { bg: '#fff7ed', color: '#ea580c', label: 'laranja bebê' },
+  { bg: '#ffedd5', color: '#c2410c', label: 'laranja' },
+  { bg: '#fed7aa', color: '#9a3412', label: 'laranja escuro' },
+
+  // — Família Amarelo / Dourado —
+  { bg: '#fefce8', color: '#854d0e', label: 'amarelo claro' },
+  { bg: '#fef9c3', color: '#92400e', label: 'dourado' },
+  { bg: '#fde68a', color: '#78350f', label: 'mel' },
+
+  // — Família Verde —
+  { bg: '#f0fdf4', color: '#15803d', label: 'verde bebê' },
+  { bg: '#d1fae5', color: '#065f46', label: 'menta' },
+  { bg: '#bbf7d0', color: '#14532d', label: 'verde claro' },
+  { bg: '#e3f6f5', color: '#00695c', label: 'verde sálvia' },
+  { bg: '#dcfce7', color: '#166534', label: 'verde médio' },
+
+  // — Família Verde Musgo / Lima —
+  { bg: '#f7fee7', color: '#3f6212', label: 'lima' },
+  { bg: '#ecfccb', color: '#365314', label: 'verde lima' },
+
+  // — Neutros Elegantes —
+  { bg: '#f1f5f9', color: '#334155', label: 'cinza azulado' },
+  { bg: '#f8fafc', color: '#475569', label: 'cinza névoa' },
+  { bg: '#f5f5f4', color: '#44403c', label: 'cinza quente' },
+  { bg: '#fafaf9', color: '#57534e', label: 'off-white' },
 ];
 
 function categoryColor(category: string) {
