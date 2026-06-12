@@ -71,6 +71,12 @@ const CATEGORY_PALETTE: { bg: string; color: string; label?: string }[] = [
   { bg: '#f8fafc', color: '#475569', label: 'cinza névoa' },
   { bg: '#f5f5f4', color: '#44403c', label: 'cinza quente' },
   { bg: '#fafaf9', color: '#57534e', label: 'off-white' },
+
+  // — Essenciais —
+  { bg: '#1c1c1e', color: '#ffffff', label: 'preto' },
+  { bg: '#f5f5f5', color: '#1c1c1e', label: 'branco' },
+  { bg: '#f5e6c8', color: '#7c5c2e', label: 'areia' },
+  { bg: '#ede0c4', color: '#6b4c24', label: 'areia escuro' },
 ];
 
 function categoryColor(category: string) {
