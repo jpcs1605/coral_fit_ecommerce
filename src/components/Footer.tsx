@@ -8,8 +8,8 @@ export function Footer() {
   return (
     <footer
       style={{
-        borderTop: '1px solid #e5e7eb',
-        background: '#f9fafb',
+        borderTop: '1px solid #cffafe',
+        background: '#ecfeff',
         padding: '14px 16px',
         marginTop: 32,
         textAlign: 'center',
