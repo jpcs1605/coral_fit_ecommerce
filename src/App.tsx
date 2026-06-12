@@ -8,6 +8,7 @@ import { loadProducts as loadProductsSync, loadProductsAsync, getCategories } fr
 import { fetchBannerSlides, BannerSlide } from './services/googleSheetsService';
 import { BannerCarousel } from './components/BannerCarousel';
 import { Toast } from './components/Toast';
+import { Footer } from './components/Footer';
 
 export default function App() {
   const [cartOpen, setCartOpen] = useState(false);
@@ -176,6 +177,7 @@ export default function App() {
         />
       )}
 
+      <Footer />
     </div>
   );
 }
